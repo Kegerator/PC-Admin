@@ -164,6 +164,7 @@ ipconfig /flushdns >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\Spe
 ping -n 4 127.0.0.1 >nul: 2>nul:
 netsh winsock reset >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 ping -n 4 127.0.0.1 >nul: 2>nul:
+:: The following lines have been commented out because, if the PC has a static IP it will loose it's network connection.
 :: netsh int ip reset >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 :: ping -n 4 127.0.0.1 >nul: 2>nul:
 :: ipconfig /release >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
@@ -202,7 +203,7 @@ Reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemR
 ping -n 10 127.0.0.1 >nul: 2>nul:
 :: Create a Restore Point
 Wmic.exe /Namespace:\\root\default Path SystemRestore Call CreateRestorePoint "Finished Speed Up Process", 100, 12 >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 240 127.0.0.1 >nul: 2>nul:
+ping -n 300 127.0.0.1 >nul: 2>nul:
 
 
 :: Schedule the Restore Point to run every 19 days
@@ -213,7 +214,7 @@ Echo ***** 1 Minutes                                    *****
 Echo ***** Time %TTime%
 Echo ********************************************************
 schtasks /create /tn RestorePoint /tr "powershell.exe Checkpoint-Computer -Description RestorePoint" /sc daily /mo 18 /sd 12/31/2021 /st 22:00 >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 60 127.0.0.1 >nul: 2>nul:
 
 
 :: start notepad "%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt"
