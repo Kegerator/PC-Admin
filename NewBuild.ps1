@@ -263,7 +263,7 @@ schtasks /Change /TN "Microsoft\XblGameSave\XblGameSaveTaskLogon" /disable
 ##########
 
 # Disable Sharing Wizzard
-Set-ItemProperty -Path "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "SharingWizardOn" -Type DWord -Value 0
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "SharingWizardOn" -Type DWord -Value 0
 
 # Disable Telemetry
 Write-Host "Disabling Telemetry..."
