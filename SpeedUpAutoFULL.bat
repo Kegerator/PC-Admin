@@ -47,6 +47,7 @@ Echo ***** Disable Schduled Tasks                       *****
 Echo ***** Set Power Scheme to High                     *****
 Echo ***** Disable Telemetry and Location Tracking      *****
 Echo ***** Clear any print jobs and restart the spooler *****
+Echo ***** Disable Multicasting                         *****
 Echo ***** Flush DNS and reset IP Stack                 *****
 Echo ***** Sync time to the Internet                    *****
 Echo ***** Create Restore Point                         *****
@@ -289,6 +290,17 @@ del "%systemroot%\system32\spool\printers\*.spl" >>%temp%\SpeedUpAuto%SDay%-%SMo
 ping -n 10 127.0.0.1 >nul: 2>nul:
 net start spooler >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 ping -n 100 127.0.0.1 >nul: 2>nul:
+
+
+:: Disable Multicasting
+Set TTime=%Time:~0,5%
+Echo ***** Disable Multicasting                         *****
+Echo ***** Disable Multicasting                         ***** >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
+Echo ***** 1 Minutes                                    *****
+Echo ***** Time %TTime%
+Echo ********************************************************
+Reg add "HKLM\Software\Policies\Microsoft\Windows NT\DNSClient" /v "EnableMulticast" /t REG_DWORD /d 0
+ping -n 30 127.0.0.1 >nul: 2>nul:
 
 
 ::  Flush DNS and reset IP Stack

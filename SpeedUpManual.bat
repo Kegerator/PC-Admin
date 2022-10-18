@@ -659,7 +659,7 @@ Del %temp%\Memory.ps1
 
 :Q21
 :: ***********************
-goto Q26
+goto Q25
 :: ***********************
 Echo.
 SET /P QQ21= ******Question***** Y N or X?
@@ -714,7 +714,7 @@ RUN***RUN***RUN***
 
 :Q25
 Echo.
-SET /P QQ25= ******Question***** Y N or X?
+SET /P QQ25= ******Disable Multicasting***** Y N or X?
 If %QQ25%==y goto Q25Y
 if %QQ25%==Y goto Q25Y
 if %QQ25%==n goto Q26
@@ -723,7 +723,8 @@ if %QQ25%==x goto End
 if %QQ25%==X goto End
 goto Q25
 :Q25Y
-RUN***RUN***RUN***
+Reg add "HKLM\Software\Policies\Microsoft\Windows NT\DNSClient" /v "EnableMulticast" /t REG_DWORD /d 0
+ping -n 20 127.0.0.1 >nul: 2>nul:
 
 :Q26
 Echo.

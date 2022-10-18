@@ -40,6 +40,7 @@ Echo ***** Start Disk Cleanup                           *****
 Echo ***** Check Windows System Files                   *****
 Echo ***** Start System Maintenance                     *****
 Echo ***** Clear any print jobs and restart the spooler *****
+Echo ***** Disable Multicasting                         *****
 Echo ***** Flush DNS and reset IP Stack                 *****
 Echo ***** Sync time to the Internet                    *****
 Echo ***** Enable and Create Restore Point              *****
@@ -150,6 +151,17 @@ net stop spooler /y >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\Sp
 del "%systemroot%\system32\spool\printers\*.shd" >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 del "%systemroot%\system32\spool\printers\*.spl" >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 net start spooler >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
+ping -n 20 127.0.0.1 >nul: 2>nul:
+
+
+:: Disable Multicasting
+Set TTime=%Time:~0,5%
+Echo ***** Disable Multicasting                         *****
+Echo ***** Disable Multicasting                         ***** >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
+Echo ***** 1 Minutes                                    *****
+Echo ***** Time %TTime%
+Echo ********************************************************
+Reg add "HKLM\Software\Policies\Microsoft\Windows NT\DNSClient" /v "EnableMulticast" /t REG_DWORD /d 0
 ping -n 20 127.0.0.1 >nul: 2>nul:
 
 
