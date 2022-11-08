@@ -65,9 +65,7 @@ $USBDrive = (Get-WmiObject win32_diskdrive | Where-Object{$_.interfacetype -eq "
 robocopy $USBDrive'\\Build\\Tech\\'  'C:\\Tech\\'
 robocopy 'C:\\Tech\\' 'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\StartUp\\' 'Help.lnk'
 
-# Insrtall Russian
-#& 'lpksetup /i * /s /p C:\\Tech\\lp_Russ.cab'
-#& DISM /Online /Add-Package /PackagePath:C:\Tech\lp_Russ.cab
+# Insrtall Russian Language
 $LanguageList = Get-WinUserLanguageList
 $LanguageList.Add("ru")
 Set-WinUserLanguageList $LanguageList -Confirm:$False
@@ -263,6 +261,7 @@ schtasks /Change /TN "Microsoft\XblGameSave\XblGameSaveTaskLogon" /disable
 ##########
 
 # Disable Sharing Wizzard
+Write-Host "Disabling Sharing Wizzard"
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "SharingWizardOn" -Type DWord -Value 0
 
 # Disable Telemetry
