@@ -42,6 +42,10 @@
 
 09/02/2022 Enable Periodic Registry Backup
 
+11/09/2022 - Infinity Add Ons
+    Enable system restore
+    Schedule the Restore Point to run every 63 days
+
 #>
 
 # If this does not run, run the following command to allow PowerShell scripts
@@ -77,7 +81,13 @@ Rename-Computer -NewName "$name"
 # Launch the install of the Simple Help client
 & 'C:\Tech\Remote Access-windows64-online.exe'
 
+# Enable system restore
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" -Name "DisableSR" -Type Dword -Value 1 
+# Schedule the Restore Point to run every 63 days
+schtasks /create /tn RestorePoint /tr "powershell.exe Checkpoint-Computer -Description RestorePoint" /sc daily /mo 63 /sd 11/09/2022 /st 22:00
+
 # This function will run later
+# This as been discontiued, It prevented software from installing
 Function Block60 {
     $TextBoxOutput.Text += "Blocking 60% of Malware..."
 
