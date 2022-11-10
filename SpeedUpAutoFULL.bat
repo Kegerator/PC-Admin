@@ -51,7 +51,7 @@ Echo ***** Disable Multicasting                         *****
 Echo ***** Flush DNS and reset IP Stack                 *****
 Echo ***** Sync time to the Internet                    *****
 Echo ***** Create Restore Point                         *****
-Echo ***** Schedule the Restore Point every 19 days     *****
+Echo ***** Schedule the Restore Point every 63 days     *****
 Echo ***** Last cleanup and Reboot                      *****
 Echo *****                                              *****
 Echo ***** Start Time %SDay%-%SMonth%-%SYear%  %StartTime%
@@ -85,27 +85,27 @@ Echo ***** Deleting Temp Files                          ***** >>C:\Windows\Temp\
 Echo ***** 5 Minutes                                    *****
 Echo ***** Time %TTime%
 Echo ********************************************************
-ping -n 2 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 del /s /f /q %USERPROFILE%\appdata\local\temp\*.* >>C:\Windows\Temp\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>NUL
-ping -n 2 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 copy C:\Windows\Temp\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt %temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt >NUL 2>>NUL
-ping -n 2 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 del /s /f /q %userprofile%\Recent\*.* >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 2 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 del /s /f /q C:\Windows\Prefetch\*.* >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 2 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 del /s /f /q C:\Windows\Temp\*.* >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 2 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 del /s /f /q %USERPROFILE%\appdata\local\Microsoft\Windows\INetCache\*.* >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 2 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 del /s /f /q C:\Windows\Logs\CBS\*.* >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 2 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 :: Clear Temporary Internet File
 RunDll32.exe InetCpl.cpl,ClearMyTracksByProcess 8 >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 2 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 :: Clear Cookies: 
 RunDll32.exe InetCpl.cpl,ClearMyTracksByProcess 2 >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 2 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 
 
 :: Start Disk Cleanup
@@ -116,7 +116,7 @@ Echo ***** 5 Minutes                                    *****
 Echo ***** Time %TTime%
 Echo ********************************************************
 c:\windows\SYSTEM32\cleanmgr /d C /verylowdisk  >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 
 
 :: Check Windows System Files
@@ -129,20 +129,20 @@ Echo *****                                              *****
 DISM /Online /Cleanup-Image /CheckHealth >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 Set TTime=%Time:~0,5%
 Echo ***** Check #1 Done %TTime%                        *****
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 DISM /Online /Cleanup-Image /ScanHealth >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 Set TTime=%Time:~0,5%
 Echo ***** Check #2 Done %TTime%                        *****
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 DISM /Online /Cleanup-Image /RestoreHealth >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 Set TTime=%Time:~0,5%
 Echo ***** Check #3 Done %TTime%                        *****
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 sfc /scannow >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 Set TTime=%Time:~0,5%
 Echo ***** Check #4 Done %TTime%                        *****
 Echo ********************************************************
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 
 
 :: Start Scans, downloads, and installs the Windows updates
@@ -187,74 +187,73 @@ ping -n 120 127.0.0.1 >nul: 2>nul:
 Set TTime=%Time:~0,5%
 Echo ***** Disable Schduled Tasks                       *****
 Echo ***** Disable Schduled Tasks                       ***** >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
-Echo ***** 5 Minutes                                    *****
+Echo ***** 2 Minutes                                    *****
 Echo ***** Time %TTime%
 Echo ********************************************************
-ping -n 10 127.0.0.1 >nul: 2>nul:
 schtasks /Change /TN "Microsoft\Windows\Application Experience\AitAgent" /disable >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 schtasks /Change /TN "Microsoft\Windows\Application Experience\Microsoft Compatibility Appraiser" /disable >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 schtasks /Change /TN "Microsoft\Windows\Autochk\Proxy" /disable >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\BthSQM" /disable >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\Consolidator" /disable >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\KernelCeipTask" /disable >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\Uploader" /disable >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\UsbCeip" /disable >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 schtasks /Change /TN "Microsoft\Windows\Shell\FamilySafetyMonitor" /disable >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 schtasks /Change /TN "Microsoft\Windows\Shell\FamilySafetyRefresh" /disable >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 schtasks /Change /TN "Microsoft\Windows\Shell\FamilySafetyUpload" /disable >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 schtasks /Change /TN "\Microsoft\Windows\Shell\FamilySafetyMonitor" /disable >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 schtasks /Change /TN "\Microsoft\Windows\Shell\FamilySafetyMonitorToastTask" /disable >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 schtasks /Change /TN "\Microsoft\Windows\Shell\FamilySafetyRefreshTask" /disable >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 schtasks /Change /TN "\Microsoft\Windows\Maps\MapsUpdateTask" /disable >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 schtasks /Change /TN "\Microsoft\Windows\Maps\MapsToastTask" /disable >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 schtasks /Change /TN "Microsoft\XblGameSave\XblGameSaveTask" /disable >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 schtasks /Change /TN "Microsoft\XblGameSave\XblGameSaveTaskLogon" /disable >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 120 127.0.0.1 >nul: 2>nul:
+ping -n 20 127.0.0.1 >nul: 2>nul:
 
 
 :: Set Power Scheme to High
 Set TTime=%Time:~0,5%
 Echo ***** Set Power Scheme to High                     *****
 Echo ***** Set Power Scheme to High                     ***** >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
-Echo ***** 2 Minute                                     *****
+Echo ***** 1 Minute                                     *****
 Echo ***** Time %TTime%
 Echo ********************************************************
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 powercfg.exe -x -monitor-timeout-ac 120 >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 powercfg.exe -x -monitor-timeout-dc 120 >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 powercfg.exe -x -disk-timeout-ac 0 >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 powercfg.exe -x -disk-timeout-dc 0 >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 powercfg.exe -x -standby-timeout-ac 0 >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 powercfg.exe -x -standby-timeout-dc 0 >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 powercfg.exe -x -hibernate-timeout-ac 0 >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 powercfg.exe -x -hibernate-timeout-dc 0 >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 powercfg /SETDCVALUEINDEX SCHEME_CURRENT 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0 >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 30 127.0.0.1 >nul: 2>nul:
+ping -n 10 127.0.0.1 >nul: 2>nul:
 
 
 :: Disable Telemetry and Location Tracking
@@ -283,13 +282,13 @@ Echo ********************************************************
 :$reference https://www.dostips.com/  >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 :$reference https://support.microsoft.com/kb/946737  >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 net stop spooler /y >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 del "%systemroot%\system32\spool\printers\*.shd" >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 del "%systemroot%\system32\spool\printers\*.spl" >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 1 127.0.0.1 >nul: 2>nul:
 net start spooler >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 100 127.0.0.1 >nul: 2>nul:
+ping -n 60 127.0.0.1 >nul: 2>nul:
 
 
 :: Disable Multicasting
@@ -307,7 +306,7 @@ ping -n 30 127.0.0.1 >nul: 2>nul:
 Set TTime=%Time:~0,5%
 Echo ***** Flush DNS and reset IP Stack                 *****
 Echo ***** Flush DNS and reset IP Stack                 ***** >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
-Echo ***** 5 Minutes                                    *****
+Echo ***** 2 Minutes                                    *****
 Echo ***** Time %TTime%
 Echo ********************************************************
 ipconfig /flushdns >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
@@ -319,7 +318,7 @@ ping -n 15 127.0.0.1 >nul: 2>nul:
 :: ipconfig /release >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 :: ping -n 15 127.0.0.1 >nul: 2>nul:
 :: ipconfig /renew >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 240 127.0.0.1 >nul: 2>nul:
+ping -n 60 127.0.0.1 >nul: 2>nul:
 
 
 :: Sync time to the Internet
@@ -344,7 +343,7 @@ ping -n 10 127.0.0.1 >nul: 2>nul:
 net start w32time >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 ping -n 10 127.0.0.1 >nul: 2>nul:
 w32tm /resync /rediscover >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 60 127.0.0.1 >nul: 2>nul:
+ping -n 20 127.0.0.1 >nul: 2>nul:
 
 
 :: Create Restore Point
@@ -358,14 +357,14 @@ Wmic.exe /Namespace:\\root\default Path SystemRestore Call CreateRestorePoint "F
 ping -n 600 127.0.0.1 >nul: 2>nul:
 
 
-:: Schedule the Restore Point to run every 19 days
+:: Schedule the Restore Point to run every 63 days
 Set TTime=%Time:~0,5%
-Echo ***** Schedule the Restore Point every 19 days     *****
-Echo ***** Schedule the Restore Point every 19 days     ***** >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
+Echo ***** Schedule the Restore Point every 63 days     *****
+Echo ***** Schedule the Restore Point every 63 days     ***** >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
 Echo ***** 1 Minutes                                    *****
 Echo ***** Time %TTime%
 Echo ********************************************************
-schtasks /create /tn RestorePoint /tr "powershell.exe Checkpoint-Computer -Description RestorePoint" /sc daily /mo 18 /sd 12/31/2021 /st 22:00 >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
+schtasks /create /tn RestorePoint /tr "powershell.exe Checkpoint-Computer -Description RestorePoint" /sc daily /mo 63 /sd 12/31/2021 /st 22:00 >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 ping -n 60 127.0.0.1 >nul: 2>nul:
 
 
@@ -378,13 +377,40 @@ Set TDay=%date:~7,2%
 Set StopTime=%Time:~0,5%
 Echo.
 Echo ********************************************************
-Echo ***** Doing the last cleanup and rebooting         *****
-Echo ***** Doing the last cleanup and rebooting         ***** >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
-Echo ***** Thank you                                    *****
+Echo ***** Doing the last cleanup                       *****
+Echo ***** Doing the last cleanup                       ***** >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
+Echo ***** 1 Minutes                                    *****
 Echo ***** Start Time %SDay%-%SMonth%-%SYear%  %StartTime% >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
 Echo ***** Stop Time  %TDay%-%TMonth%-%TYear%  %StopTime%  >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
 Echo ***** Start Time %SDay%-%SMonth%-%SYear%  %StartTime%
 Echo ***** Stop Time  %TDay%-%TMonth%-%TYear%  %StopTime%
 Echo ********************************************************
-ping -n 120 127.0.0.1 >nul: 2>nul
+ping -n 60 127.0.0.1 >nul: 2>nul
+Echo ***** Rebooting in 2:00 minutes                    *****
+ping -n 11 127.0.0.1 >nul: 2>nul
+Echo ***** 1:50                                         *****
+ping -n 11 127.0.0.1 >nul: 2>nul
+Echo ***** 1:40                                         *****
+ping -n 11 127.0.0.1 >nul: 2>nul
+Echo ***** 1:30                                         *****
+ping -n 11 127.0.0.1 >nul: 2>nul
+Echo ***** 1:20                                         *****
+ping -n 11 127.0.0.1 >nul: 2>nul
+Echo ***** 1:10                                         *****
+ping -n 11 127.0.0.1 >nul: 2>nul
+Echo ***** 1:00                                         *****
+ping -n 11 127.0.0.1 >nul: 2>nul
+Echo ***** 0:50                                         *****
+ping -n 11 127.0.0.1 >nul: 2>nul
+Echo ***** 0:40                                         *****
+ping -n 11 127.0.0.1 >nul: 2>nul
+Echo ***** 0:30                                         *****
+ping -n 11 127.0.0.1 >nul: 2>nul
+Echo ***** 0:20                                         *****
+ping -n 11 127.0.0.1 >nul: 2>nul
+Echo ***** 0:10                                         *****
+ping -n 11 127.0.0.1 >nul: 2>nul
+Echo *****  Thank you                                   *****
+Echo ********************************************************
+ping -n 6 127.0.0.1 >nul: 2>nul
 shutdown /r /f /c "Speedup Process Completed"  >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
