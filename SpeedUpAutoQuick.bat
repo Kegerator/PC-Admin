@@ -225,7 +225,7 @@ Echo ***** Schedule the Restore Point every 63 days     ***** >>%temp%\SpeedUpAu
 Echo ***** 1 Minutes                                    *****
 Echo ***** Time %TTime%
 Echo ********************************************************
-schtasks /create /tn RestorePoint /tr "powershell.exe Checkpoint-Computer -Description RestorePoint" /sc daily /mo 63 /sd 12/31/2021 /st 22:00 >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
+schtasks /create /tn RestorePoint /tr "powershell.exe Checkpoint-Computer -Description RestorePoint" /sc daily /mo 63 /sd 12/31/2021 /st 22:00 /f >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt 
 ping -n 30 127.0.0.1 >nul: 2>nul:
 
 
