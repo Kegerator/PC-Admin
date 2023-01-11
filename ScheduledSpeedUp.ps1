@@ -18,7 +18,7 @@ if %errorLevel% == 0 (
     Echo *****         for this to work properly            *****
     Echo ********************************************************
     Echo.
-    Pause
+    ping -n 10 127.0.0.1 >nul: 2>nul:
     Color 7 
     )
 
@@ -36,15 +36,12 @@ Echo ********************************************************
 Echo *****  ---This will take 20 minutes to 4 hours---  *****
 Echo *****                                              *****
 Echo ***** Deleting Temp Files                          *****
-Echo ***** Start Disk Cleanup                           *****
+Echo ***** Running Windows Disk Clean up Tool           *****
 Echo ***** Check Windows System Files                   *****
 Echo ***** Start System Maintenance                     *****
 Echo ***** Clear any print jobs and restart the spooler *****
-Echo ***** Disable Multicasting                         *****
 Echo ***** Flush DNS and reset IP Stack                 *****
 Echo ***** Sync time to the Internet                    *****
-Echo ***** Enable and Create Restore Point              *****
-Echo ***** Schedule the Restore Point every 63 days     *****
 Echo *****                                              *****
 Echo ***** Start Time %SDay%-%SMonth%-%SYear%  %StartTime%
 Echo ***** Start Time %SDay%-%SMonth%-%SYear%  %StartTime% >C:\Windows\Temp\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
@@ -85,15 +82,16 @@ RunDll32.exe InetCpl.cpl,ClearMyTracksByProcess 2 >>%temp%\SpeedUpAuto%SDay%-%SM
 ping -n 2 127.0.0.1 >nul: 2>nul:
 
 
-:: Start Disk Cleanup
+:: Running Windows Disk Clean up Tool
 Set TTime=%Time:~0,5%
-Echo ***** Start Disk Cleanup                           *****
-Echo ***** Start Disk Cleanup                           ***** >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
+Echo ********************************************************
+Echo ***** Running Windows Disk Clean up Tool           *****
+Echo ***** Running Windows Disk Clean up Tool           ***** >>C:\Windows\Temp\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
 Echo ***** 5 Minutes                                    *****
 Echo ***** Time %TTime%
 Echo ********************************************************
-c:\windows\SYSTEM32\cleanmgr /d C /verylowdisk
-ping -n 10 127.0.0.1 >nul: 2>nul:
+cleanmgr /sagerun:1 | out-Null
+ping -n 2 127.0.0.1 >nul: 2>nul:
 
 
 :: Check Windows System Files
@@ -154,17 +152,6 @@ net start spooler >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\Spee
 ping -n 30 127.0.0.1 >nul: 2>nul:
 
 
-:: Disable Multicasting
-Set TTime=%Time:~0,5%
-Echo ***** Disable Multicasting                         *****
-Echo ***** Disable Multicasting                         ***** >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
-Echo ***** 1 Minute                                     *****
-Echo ***** Time %TTime%
-Echo ********************************************************
-Reg add "HKLM\Software\Policies\Microsoft\Windows NT\DNSClient" /v "EnableMulticast" /t REG_DWORD /d 0
-ping -n 30 127.0.0.1 >nul: 2>nul:
-
-
 ::  Flush DNS and reset IP Stack
 Set TTime=%Time:~0,5%
 Echo ***** Flush DNS and reset IP Stack                 *****
@@ -200,32 +187,6 @@ w32tm /config /update >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\
 w32tm /register >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 net start w32time >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 w32tm /resync /rediscover >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 30 127.0.0.1 >nul: 2>nul:
-
-
-:: Create Restore Point
-Set TTime=%Time:~0,5%
-Echo ***** Enable and Create Restore Point              *****
-Echo ***** Enable and Create Restore Point              ***** >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
-Echo ***** 5 Minutes                                    *****
-Echo ***** Time %TTime%
-Echo ********************************************************
-:: Enable system restore
-Reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v DisableSR /t REG_DWORD /d 1 /f >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 10 127.0.0.1 >nul: 2>nul:
-:: Create a Restore Point
-Wmic.exe /Namespace:\\root\default Path SystemRestore Call CreateRestorePoint "Finished Speed Up Process", 100, 12 >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 300 127.0.0.1 >nul: 2>nul:
-
-
-:: Schedule the Restore Point to run every 63 days
-Set TTime=%Time:~0,5%
-Echo ***** Schedule the Restore Point every 63 days     *****
-Echo ***** Schedule the Restore Point every 63 days     ***** >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
-Echo ***** 1 Minutes                                    *****
-Echo ***** Time %TTime%
-Echo ********************************************************
-schtasks /create /tn RestorePoint /tr "powershell.exe Checkpoint-Computer -Description RestorePoint" /sc daily /mo 63 /sd 12/31/2021 /st 22:00 /f >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt 
 ping -n 30 127.0.0.1 >nul: 2>nul:
 
 
