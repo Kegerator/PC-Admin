@@ -46,6 +46,9 @@
     Enable system restore
     Schedule the Restore Point to run every 63 days
 
+01/30/2023 - Infinity Add Ons
+    Schedule a reboot the third Sunday of the month at 6 AM
+
 #>
 
 # If this does not run, run the following command to allow PowerShell scripts
@@ -85,6 +88,9 @@ Rename-Computer -NewName "$name"
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" -Name "DisableSR" -Type Dword -Value 1 
 # Schedule the Restore Point to run every 63 days
 schtasks /create /tn RestorePoint /tr "powershell.exe Checkpoint-Computer -Description RestorePoint" /sc daily /mo 63 /sd 11/09/2022 /st 22:00
+
+# Schedule a reboot the third Sunday of the month at 6 AM
+SCHTASKS /CREATE /SC MONTHLY /M * /MO THIRD /D SUN /ST 06:00 /TN "Monthly Reboot" /TR "C:\Windows\System32\shutdown.exe /r /f /c" /RL HIGHEST
 
 # This function will run later
 # This as been discontiued, It prevented software from installing
