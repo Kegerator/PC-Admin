@@ -33,13 +33,12 @@ Set SDay=%date:~7,2%
 Set StartTime=%Time:~0,5%
 Echo.
 Echo ********************************************************
-Echo *****  ---This will take 20 minutes to 4 hours---  *****
+Echo *****  ---This will take 10 minutes to 2 hours---  *****
 Echo *****                                              *****
 Echo ***** Deleting Temp Files                          *****
 Echo ***** Running Windows Disk Clean up Tool           *****
 Echo ***** Check Windows System Files                   *****
 Echo ***** Start System Maintenance                     *****
-Echo ***** Clear any print jobs and restart the spooler *****
 Echo ***** Flush DNS and reset IP Stack                 *****
 Echo ***** Sync time to the Internet                    *****
 Echo *****                                              *****
@@ -136,22 +135,6 @@ MSchedExe.exe Start >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\Sp
 ping -n 120 127.0.0.1 >nul: 2>nul:
 
 
-:: Clear any print jobs and restart the spooler
-Set TTime=%Time:~0,5%
-Echo ***** Clear any print jobs and restart the spooler *****
-Echo ***** Clear any print jobs and restart the spooler ***** >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
-Echo ***** 1 Minute                                     *****
-Echo ***** Time %TTime%
-Echo ********************************************************
-:$reference https://www.dostips.com/
-:$reference https://support.microsoft.com/kb/946737
-net stop spooler /y >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-del "%systemroot%\system32\spool\printers\*.shd" >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-del "%systemroot%\system32\spool\printers\*.spl" >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-net start spooler >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
-ping -n 30 127.0.0.1 >nul: 2>nul:
-
-
 ::  Flush DNS and reset IP Stack
 Set TTime=%Time:~0,5%
 Echo ***** Flush DNS and reset IP Stack                 *****
@@ -206,33 +189,6 @@ Echo ***** Start Time %SDay%-%SMonth%-%SYear%  %StartTime% >>%temp%\SpeedUpAuto%
 Echo ***** Stop Time  %TDay%-%TMonth%-%TYear%  %StopTime%  >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
 Echo ***** Start Time %SDay%-%SMonth%-%SYear%  %StartTime%
 Echo ***** Stop Time  %TDay%-%TMonth%-%TYear%  %StopTime%
-Echo ********************************************************
-ping -n 60 127.0.0.1 >nul: 2>nul
-Echo ***** Rebooting in 2:00 minutes                    *****
-ping -n 11 127.0.0.1 >nul: 2>nul
-Echo ***** 1:50                                         *****
-ping -n 11 127.0.0.1 >nul: 2>nul
-Echo ***** 1:40                                         *****
-ping -n 11 127.0.0.1 >nul: 2>nul
-Echo ***** 1:30                                         *****
-ping -n 11 127.0.0.1 >nul: 2>nul
-Echo ***** 1:20                                         *****
-ping -n 11 127.0.0.1 >nul: 2>nul
-Echo ***** 1:10                                         *****
-ping -n 11 127.0.0.1 >nul: 2>nul
-Echo ***** 1:00                                         *****
-ping -n 11 127.0.0.1 >nul: 2>nul
-Echo ***** 0:50                                         *****
-ping -n 11 127.0.0.1 >nul: 2>nul
-Echo ***** 0:40                                         *****
-ping -n 11 127.0.0.1 >nul: 2>nul
-Echo ***** 0:30                                         *****
-ping -n 11 127.0.0.1 >nul: 2>nul
-Echo ***** 0:20                                         *****
-ping -n 11 127.0.0.1 >nul: 2>nul
-Echo ***** 0:10                                         *****
-ping -n 11 127.0.0.1 >nul: 2>nul
 Echo *****  Thank you                                   *****
 Echo ********************************************************
 ping -n 6 127.0.0.1 >nul: 2>nul
-shutdown /r /f /c "Speedup Process Completed"  >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
