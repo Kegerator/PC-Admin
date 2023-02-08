@@ -50,6 +50,9 @@
     Schedule a job to do a simple cleanup the third Sunday of the month at 3:00 AM
     Schedule a reboot the third Sunday of the month at 6 AM
 
+02/08/2023 - Privacy Settings
+    Disable Offer to Save Passwords in Google Chrome for All Users
+    Disable Save Passwords in Microsoft Edge
 #>
 
 # If this does not run, run the following command to allow PowerShell scripts
@@ -279,6 +282,14 @@ schtasks /Change /TN "Microsoft\XblGameSave\XblGameSaveTaskLogon" /disable
 ##########
 # Privacy Settings
 ##########
+
+# Disable Offer to Save Passwords in Google Chrome for All Users
+Write-Host "Disable Offer to Save Passwords in Google Chrome for All Users"
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Google\Chrome" -Name "PasswordManagerEnabled" -Type DWord -Value 0
+
+# Disable Save Passwords in Microsoft Edge
+Write-Host "Disable Save Passwords in Microsoft Edge"
+Set-ItemProperty "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main" -Name "FormSuggest Passwords" -Type String -Value "no"
 
 # Disable Sharing Wizzard
 Write-Host "Disabling Sharing Wizzard"
