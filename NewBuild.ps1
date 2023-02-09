@@ -53,6 +53,10 @@
 02/08/2023 - Privacy Settings
     Disable Offer to Save Passwords in Google Chrome for All Users
     Disable Save Passwords in Microsoft Edge
+
+02/09/2023 - Privacy Settings
+    Block users from adding Microsoft Accounts
+
 #>
 
 # If this does not run, run the following command to allow PowerShell scripts
@@ -282,6 +286,10 @@ schtasks /Change /TN "Microsoft\XblGameSave\XblGameSaveTaskLogon" /disable
 ##########
 # Privacy Settings
 ##########
+
+# Block users from adding Microsoft Accounts
+Write-Host "Block users from adding Microsoft Accounts"
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\Settings\AllowYourAccount" -Name "NoConnectedUser" -Type DWord -Value 1
 
 # Disable Offer to Save Passwords in Google Chrome for All Users
 Write-Host "Disable Offer to Save Passwords in Google Chrome for All Users"
