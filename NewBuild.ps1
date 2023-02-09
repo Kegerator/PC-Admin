@@ -56,6 +56,8 @@
 
 02/09/2023 - Privacy Settings
     Block users from adding Microsoft Accounts
+    ***This would block them from using Office 365***
+    Commented out this feature 
 
 #>
 
@@ -288,8 +290,12 @@ schtasks /Change /TN "Microsoft\XblGameSave\XblGameSaveTaskLogon" /disable
 ##########
 
 # Block users from adding Microsoft Accounts
-Write-Host "Block users from adding Microsoft Accounts"
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\Settings\AllowYourAccount" -Name "NoConnectedUser" -Type DWord -Value 1
+# ***This would block them from using Office 365***
+# 0 = Allow Microsoft Accounts
+# 1 = Users can't add Microsoft Accounts
+# 3 = Users can't add or log on with Microsoft accounts
+# Write-Host "Block users from adding Microsoft Accounts"
+# Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\Settings\AllowYourAccount" -Name "NoConnectedUser" -Type DWord -Value 1
 
 # Disable Offer to Save Passwords in Google Chrome for All Users
 Write-Host "Disable Offer to Save Passwords in Google Chrome for All Users"
