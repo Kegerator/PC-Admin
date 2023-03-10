@@ -103,23 +103,23 @@ Echo ***** Check Windows System Files, 4 checks         ***** >>%temp%\SpeedUpAu
 Echo ***** 2 Hours                                      *****
 Echo ***** Time %TTime%
 Echo *****                                              *****
-DISM /Online /Cleanup-Image /CheckHealth >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
+ping -n 2 127.0.0.1 >nul: 2>nul:
+sfc /scannow >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 Set TTime=%Time:~0,5%
 Echo ***** Check #1 Done %TTime%                          *****
-ping -n 10 127.0.0.1 >nul: 2>nul:
-DISM /Online /Cleanup-Image /ScanHealth >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
+ping -n 2 127.0.0.1 >nul: 2>nul:
+DISM /Online /Cleanup-Image /CheckHealth >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 Set TTime=%Time:~0,5%
 Echo ***** Check #2 Done %TTime%                          *****
-ping -n 10 127.0.0.1 >nul: 2>nul:
-DISM /Online /Cleanup-Image /RestoreHealth >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
+ping -n 2 127.0.0.1 >nul: 2>nul:
+DISM /Online /Cleanup-Image /ScanHealth >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 Set TTime=%Time:~0,5%
 Echo ***** Check #3 Done %TTime%                          *****
-ping -n 10 127.0.0.1 >nul: 2>nul:
-sfc /scannow >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
+DISM /Online /Cleanup-Image /RestoreHealth >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 Set TTime=%Time:~0,5%
 Echo ***** Check #4 Done %TTime%                          *****
 Echo ********************************************************
-ping -n 10 127.0.0.1 >nul: 2>nul:
+ping -n 2 127.0.0.1 >nul: 2>nul:
 
 
 :: Start System Maintenance Silent
