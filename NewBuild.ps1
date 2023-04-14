@@ -94,8 +94,15 @@ Rename-Computer -NewName "$name"
 # Launch the install of the Simple Help client
 & 'C:\Tech\Remote Access-windows64-online.exe'
 
-# Enable system restore
+# Enable system restore on the PC
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" -Name "DisableSR" -Type Dword -Value 1 
+
+# Enable System Restore for C:
+Enable-ComputerRestore -Drive "C:\"
+
+# Set the Restore Storage Size
+vssadmin resize shadowstorage /On=%SystemDrive% /For=%SystemDrive% /Maxsize=30GB
+
 # Schedule the Restore Point to run every 63 days
 schtasks /create /tn RestorePoint /tr "powershell.exe Checkpoint-Computer -Description RestorePoint" /sc daily /mo 63 /sd 11/09/2022 /st 22:00
 
@@ -412,16 +419,6 @@ w32tm /resync
 
 # Enable Auto Maintenance
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\" -Name "Maintenance" -Type DWord -Value 0
-
-# Enable System Restore
-Enable-ComputerRestore -Drive "C:\"
-::
-# Set the Restore Storage Size
-vssadmin resize shadowstorage /On=%SystemDrive% /For=%SystemDrive% /Maxsize=30GB
-::
-# Schedule the Restore Point to run every 12 days
-schtasks /create /tn RestorePoint /tr "powershell.exe Checkpoint-Computer -Description RestorePoint" /sc daily /mo 12 /sd 12/31/2021 /st 22:00 
-
 
 # Enable sharing mapped drives between users
 Write-Host "Enabling sharing mapped drives between users..."
