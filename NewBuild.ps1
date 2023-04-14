@@ -79,8 +79,8 @@ If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 $USBDrive = (Get-WmiObject win32_diskdrive | Where-Object{$_.interfacetype -eq "USB"} | ForEach-Object{Get-WmiObject -Query "ASSOCIATORS OF {Win32_DiskDrive.DeviceID=`"$($_.DeviceID.replace('\','\\'))`"} WHERE AssocClass = Win32_DiskDriveToDiskPartition"} |  ForEach-Object{Get-WmiObject -Query "ASSOCIATORS OF {Win32_DiskPartition.DeviceID=`"$($_.DeviceID)`"} WHERE AssocClass = Win32_LogicalDiskToPartition"} | ForEach-Object{$_.deviceid})
 
 # Copy the Tech files and Help to the PC
-robocopy $USBDrive'\\Build\\Tech\\'  'C:\\Tech\\'
-robocopy 'C:\\Tech\\' 'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\StartUp\\' 'Help.lnk'
+robocopy $USBDrive'\\Build\\Tech\\'  'C:\\Tech\\' /R:2 /W:1
+robocopy 'C:\\Tech\\' 'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\StartUp\\' 'Help.lnk' /R:2 /W:1
 
 # Insrtall Russian Language
 $LanguageList = Get-WinUserLanguageList
