@@ -59,6 +59,10 @@
     ***This would block them from using Office 365***
     Commented out this feature 
 
+07/03/2023 - Infinity Add Ons
+    Enable Windows Sandbox
+
+
 #>
 
 # If this does not run, run the following command to allow PowerShell scripts
@@ -111,6 +115,9 @@ SCHTASKS /CREATE /SC MONTHLY /M * /MO THIRD /D SUN /ST 03:00 /TN "Monthly Clean"
 
 # Schedule a reboot the third Sunday of the month at 6 AM
 SCHTASKS /CREATE /SC MONTHLY /M * /MO THIRD /D SUN /ST 06:00 /TN "Monthly Reboot" /TR "C:\Windows\System32\shutdown.exe /r /f /c" /RL HIGHEST
+
+# Enable Windows Sandbox
+Enable-WindowsOptionalFeature -FeatureName "Containers-DisposableClientVM" -All -Online
 
 # This function will run later
 # This as been discontiued, It prevented software from installing
