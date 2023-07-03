@@ -220,6 +220,17 @@ Reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemR
 ping -n 1 127.0.0.1 >nul: 2>nul:
 :: Create a Restore Point
 Wmic.exe /Namespace:\\root\default Path SystemRestore Call CreateRestorePoint "Finished Speed Up Process", 100, 12 >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
+:: Check for any errors
+if %errorlevel% neq 0 (
+    :: An error occurred, print an error message
+    echo An error occurred while creating the restore point. 
+    echo An error occurred while creating the restore point. >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
+) else (
+    :: No error occurred, print a success message
+    echo The restore point was created successfully.
+    echo The restore point was created successfully. >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
+)
+**********************
 ping -n 300 127.0.0.1 >nul: 2>nul:
 
 
