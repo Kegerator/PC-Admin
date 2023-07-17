@@ -13,4 +13,4 @@ $linesToCopy = $hostfile | Where-Object { $_ -notmatch '^#' }  # Select lines th
 $linesToCopy | Out-File -FilePath "C:\Windows\System32\drivers\etc\OldHost" -Append  # Copy lines to OldHost file
 $hostfile = $hostfile | Where-Object { $_ -match '^#' }  # Remove lines that don't start with "#"
 $hostfile += $NewLine
-Set-Content -Path $file -Value $hostfile -Force
+$hostfile | Set-Content -Path $file -Force
