@@ -745,7 +745,7 @@ foreach ($app in $apps) {
 
 ForEach ($App in $apps) {
     $PackageFullName = (Get-AppxPackage $App).PackageFullName
-    $ProPackageFullName = (Get-AppxProvisionedPackage -online | where {$_.Displayname -eq $App}).PackageName
+    $ProPackageFullName = (Get-AppxProvisionedPackage -online | Where-Object {$_.Displayname -eq $App}).PackageName
     write-host $PackageFullName
     Write-Host $ProPackageFullName
     if ($PackageFullName){
