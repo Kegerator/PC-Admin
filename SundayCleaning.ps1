@@ -1,5 +1,6 @@
 <#
 This is desinged to be run every Sunday, it does the following.
+    Check for and apply updates to the script from GitHub
     Clears the print queue.
     Synchronizes the computer time with an internet time server.
     Resets the network connection.
@@ -12,12 +13,29 @@ This is desinged to be run every Sunday, it does the following.
     Checks for disk errors and fixes them if found.
     Restarts the computer if it is the 3rd Sunday.
 
+The log file is located at C:\Tech\SundayCleaningLog.txt
+
+Ensure that the execution policy on the target system allows script execution.
+    powershell.exe -ExecutionPolicy Bypass 
+
 Copy this script to C:\Tech
 
 Run this command as adminstator to schedule this script to be run every Sunday at 3:00 AM
         schtasks /Create /TN "SundayCleaningTask" /SC WEEKLY /D SUN /ST 03:00 /TR "powershell.exe -ExecutionPolicy Bypass -File C:\Tech\SundayCleaning.ps1" /RU SYSTEM /RL HIGHEST /F
 
+.VERSION
+    1.0.0
 #>
+
+function LogMessage {
+    param(
+        [string]$Message,
+        [string]$LogFile = "C:\Tech\SundayCleaningLog.txt"
+    )
+
+    $LogEntry = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') - $Message"
+    $LogEntry | Out-File -FilePath $LogFile -Append
+}
 
 # Function to check if the current day is the 3rd Sunday of the month
 function IsThirdSunday {
@@ -28,38 +46,66 @@ function IsThirdSunday {
     return ($dayOfWeek -eq 'Sunday' -and $weekOfMonth -eq 3)
 }
 
-function Install-PSWindowsUpdateModule {
+# Function to check for and apply updates to the script from GitHub
+function UpdateScriptFromGitHub {
+    $githubRepoUrl = "https://api.github.com/repos/Kegerator/PC-Admin/main/SundayCleaning.ps1"
+    $localScriptPath = "C:\Tech\SundayCleaning.ps1"
+
+    try {
+        $latestScript = Invoke-RestMethod -Uri $githubRepoUrl
+        $encodedContent = $latestScript.content
+        $decodedContent = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($encodedContent))
+
+        # Get the local script version
+        $localScriptVersion = (Get-Item $localScriptPath).VersionInfo.ProductVersion
+
+        # Get the version of the script available on GitHub
+        $githubScriptVersion = $decodedContent | Select-String -Pattern 'ProductVersion=(\d+\.\d+\.\d+\.\d+)' | ForEach-Object { $_.Matches.Groups[1].Value }
+
+        # Compare versions
+        if ([version]$githubScriptVersion -gt [version]$localScriptVersion) {
+            $decodedContent | Set-Content -Path $localScriptPath -Force
+            LogMessage "Script updated successfully from GitHub."
+        } else {
+            LogMessage "Local script is up to date. No update needed."
+        }
+    } catch {
+        LogMessage "Failed to update the script from GitHub. Error: $_"
+    }
+}
+
+function InstallPSWindowsUpdateModule {
     # Check if the PSWindowsUpdate module is installed
     $psWindowsUpdateModule = Get-Module -ListAvailable -Name PSWindowsUpdate
 
-    if ($psWindowsUpdateModule -eq $null) {
+    if ($null -eq $psWindowsUpdateModule) {
         # If the module is not installed, attempt to install it from the PowerShell Gallery
-        Write-Host "PSWindowsUpdate module is not installed. Installing it now..."
+        LogMessage "PSWindowsUpdate module is not installed. Installing it now..."
         try {
             Install-Module -Name PSWindowsUpdate -Force -AllowClobber -Scope CurrentUser
-            Write-Host "PSWindowsUpdate module installed successfully."
+            LogMessage "PSWindowsUpdate module installed successfully."
         } catch {
-            Write-Host "Failed to install the PSWindowsUpdate module. Error: $_"
+            LogMessage "Failed to install the PSWindowsUpdate module. Error: $_"
         }
     } else {
-        Write-Host "PSWindowsUpdate module is already installed."
+        LogMessage "PSWindowsUpdate module is already installed."
     }
 }
 
 # Function to download and install updates using PSWindowsUpdate (for Windows 10)
 function InstallUpdatesWin10 {
-    Write-Host "Checking for updates using PSWindowsUpdate..."
+    LogMessage "Checking for updates using PSWindowsUpdate..."
     if (Get-Module -ListAvailable -Name PSWindowsUpdate) {
         Import-Module PSWindowsUpdate -ErrorAction Stop
         Get-WUInstall -AcceptAll -AutoReboot
     } else {
-        Write-Host "PSWindowsUpdate module not found. Please install it before running this script."
+        LogMessage "PSWindowsUpdate module not found. Please install it before running this script."
     }
 }
 
 # Function to download and install updates using WindowsUpdateProvider (for Windows 11)
 function InstallUpdatesWin11 {
-    Write-Host "Checking for updates using WindowsUpdateProvider..."
+    LogMessage "Checking for updates using WindowsUpdateProvider..."
     try {
         $updateSession = New-Object -ComObject Microsoft.Update.Session
         $updateSearcher = $updateSession.CreateUpdateSearcher()
@@ -72,47 +118,47 @@ function InstallUpdatesWin11 {
             $updatesInstaller.Updates = $updates.Updates
             $installationResult = $updatesInstaller.Install()
             if ($installationResult.RebootRequired) {
-                Write-Host "Updates installed successfully. Reboot is required."
+                LogMessage "Updates installed successfully. Reboot is required."
             } else {
-                Write-Host "Updates installed successfully. No reboot required."
+                LogMessage "Updates installed successfully. No reboot required."
             }
         } else {
-            Write-Host "No updates found."
+            LogMessage "No updates found."
         }
     } catch {
-        Write-Host "Failed to check for or install updates. Error: $_"
+        LogMessage "Failed to check for or install updates. Error: $_"
     }
 }
 
 # Function to run Disk Cleanup
-function Run-DiskCleanup {
+function RunDiskCleanup {
     cleanmgr.exe -ArgumentList /sagerun:1
 }
 
 # Function to optimize drives
-function Optimize-Drives {
-    Optimize-Volume -DriveLetter "C" -Defrag -Verbose
-    # If you have additional drives, add their letters and run Optimize-Volume for them as well.
+function OptimizeDrives {
+    OptimizeVolume -DriveLetter "C" -Defrag -Verbose
+    # If you have additional drives, add their letters and run OptimizeVolume for them as well.
     # For example:
-    # Optimize-Volume -DriveLetter "D" -Defrag -Verbose
+    # OptimizeVolume -DriveLetter "D" -Defrag -Verbose
 }
 
 # Function to check disk errors
-function Check-DiskErrors {
+function CheckDiskErrors {
     chkdsk /f /r
 }
 
 # function to clear the print queue
-function Clear-PrintQueue {
+function ClearPrintQueue {
     $spoolerService = Get-Service -Name Spooler -ErrorAction SilentlyContinue
 
-    if ($spoolerService -eq $null) {
-        Write-Host "Print Spooler service is not installed or cannot be found."
+    if ($null -eq $spoolerService) {
+        LogMessage "Print Spooler service is not installed or cannot be found."
         return
     }
 
     if ($spoolerService.Status -eq 'Running') {
-        Write-Host "Stopping Print Spooler service..."
+        LogMessage "Stopping Print Spooler service..."
         Stop-Service -Name Spooler -Force
 
         # Wait a moment to ensure the service is stopped
@@ -121,21 +167,21 @@ function Clear-PrintQueue {
 
     $printJobs = Get-WmiObject -Query "Select * From Win32_PrintJob" -ErrorAction SilentlyContinue
 
-    if ($printJobs -ne $null) {
-        Write-Host "Deleting print jobs..."
+    if ($null -ne $printJobs) {
+        LogMessage "Deleting print jobs..."
         $printJobs | ForEach-Object {
             $_.Delete()
         }
     } else {
-        Write-Host "No print jobs found in the queue."
+        LogMessage "No print jobs found in the queue."
     }
 
-    Write-Host "Starting Print Spooler service..."
+    LogMessage "Starting Print Spooler service..."
     Start-Service -Name Spooler
 }
 
 # function to sync the computer time to the internet
-function Sync-ComputerTime {
+function SyncComputerTime {
     # Get the current system date and time
     $currentDateTime = Get-Date
 
@@ -145,7 +191,7 @@ function Sync-ComputerTime {
         $ntpResult = Invoke-WebRequest -Uri "http://$ntpServer" -UseBasicParsing
         $ntpTime = [DateTime]::ParseExact($ntpResult.Headers.Date, "ddd, dd MMM yyyy HH:mm:ss 'GMT'", [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::AssumeUniversal)
     } catch {
-        Write-Host "Failed to retrieve internet time from $ntpServer. Ensure that you have internet connectivity."
+        LogMessage "Failed to retrieve internet time from $ntpServer. Ensure that you have internet connectivity."
         return
     }
 
@@ -155,7 +201,7 @@ function Sync-ComputerTime {
     # Set the system time to the internet time
     Set-Date -Date ($currentDateTime + $timeDifference)
 
-    Write-Host "Computer time synced to internet time from $ntpServer."
+    LogMessage "Computer time synced to internet time from $ntpServer."
 }
 
 # Delete Temp Files
@@ -181,22 +227,22 @@ Function ClearBrowserCache {
     RunDll32.exe InetCpl.cpl,ClearMyTracksByProcess 2
 }
 
-function Reset-NetworkConnection {
+function ResetNetworkConnection {
     # Store the current network configuration
     $networkConfig = Get-NetIPConfiguration | Where-Object { $_.InterfaceAlias -eq 'Ethernet' }  # Replace 'Ethernet' with your network adapter alias
 
     # Purge DNS resolver cache using ipconfig
-    Write-Host "Purging DNS resolver cache..."
+    LogMessage "Purging DNS resolver cache..."
     ipconfig /flushdns
 
     # Check if the interface is configured for DHCP
     if ($networkConfig.Dhcp) {
-        Write-Host "Skipping network reset as the interface is configured for DHCP."
+        LogMessage "Skipping network reset as the interface is configured for DHCP."
         return
     }
 
     # Reset the network connection using netsh
-    Write-Host "Resetting network connection..."
+    LogMessage "Resetting network connection..."
     netsh interface set interface $networkConfig.InterfaceAlias admin=DISABLED
     netsh interface set interface $networkConfig.InterfaceAlias admin=ENABLED
 
@@ -204,34 +250,35 @@ function Reset-NetworkConnection {
     Start-Sleep -Seconds 5
 
     # Restore the static IP address, subnet mask, and gateway settings
-    Write-Host "Restoring static IP settings..."
+    LogMessage "Restoring static IP settings..."
     netsh interface ipv4 set address name=$networkConfig.InterfaceAlias source=static address=$networkConfig.IPv4Address IPAddress=$networkConfig.IPAddress
     netsh interface ipv4 set address name=$networkConfig.InterfaceAlias source=static address=$networkConfig.IPv4Address IPAddress=$networkConfig.IPAddress mask=$networkConfig.IPv4Netmask
     netsh interface ipv4 set address name=$networkConfig.InterfaceAlias gateway=$networkConfig.IPv4DefaultGateway gwmetric=$networkConfig.IPv4DefaultGatewayMetric
 
-    Write-Host "Network connection has been reset without losing static IP settings."
+    LogMessage "Network connection has been reset without losing static IP settings."
 }
 
 # Main Script
-Clear-PrintQueue
-Sync-ComputerTime
-Reset-NetworkConnection
+UpdateScriptFromGitHub
+ClearPrintQueue
+SyncComputerTime
+ResetNetworkConnection
 if (IsThirdSunday) {
-    Install-PSWindowsUpdateModule
+    InstallPSWindowsUpdateModule
     if ([System.Environment]::OSVersion.Version -ge [Version]"10.0.22000") {
         InstallUpdatesWin11
     } else {
         InstallUpdatesWin10
     }
 } else {
-    Write-Host "Today is not the 3rd Sunday of the month. No updates will be installed."
+    LogMessage "Today is not the 3rd Sunday of the month. No updates will be installed."
 }
 ClearBrowserCache
-Run-DiskCleanup
+RunDiskCleanup
 DeleteTemp
-Optimize-Drives
-Check-DiskErrors
-Write-Host "Restarting the computer..."
+OptimizeDrives
+CheckDiskErrors
+LogMessage "Restarting the computer..."
 if (IsThirdSunday) {
     Restart-Computer -Force
 }
