@@ -24,7 +24,7 @@ Run this command as adminstator to schedule this script to be run every Sunday a
         schtasks /Create /TN "SundayCleaningTask" /SC WEEKLY /D SUN /ST 03:00 /TR "powershell.exe -ExecutionPolicy Bypass -File C:\Tech\SundayCleaning.ps1" /RU SYSTEM /RL HIGHEST /F
 
 .VERSION
-    1.0.0
+    0.1.0
 #>
 
 function LogMessage {
@@ -48,7 +48,7 @@ function IsThirdSunday {
 
 # Function to check for and apply updates to the script from GitHub
 function UpdateScriptFromGitHub {
-    $githubRepoUrl = "https://api.github.com/repos/Kegerator/PC-Admin/main/SundayCleaning.ps1"
+    $githubRepoUrl = "https://github.com/Kegerator/PC-Admin/blob/main/SundayCleaning.ps1"
     $localScriptPath = "C:\Tech\SundayCleaning.ps1"
 
     try {
