@@ -97,7 +97,7 @@ function InstallUpdatesWin10 {
     LogMessage "Checking for updates using PSWindowsUpdate..."
     if (Get-Module -ListAvailable -Name PSWindowsUpdate) {
         Import-Module PSWindowsUpdate -ErrorAction Stop
-        Get-WUInstall -AcceptAll -AutoReboot
+        Get-WUInstall -AcceptAll
     } else {
         LogMessage "PSWindowsUpdate module not found. Please install it before running this script."
     }
@@ -117,11 +117,8 @@ function InstallUpdatesWin11 {
             $updatesInstaller = $updateSession.CreateUpdateInstaller()
             $updatesInstaller.Updates = $updates.Updates
             $installationResult = $updatesInstaller.Install()
-            if ($installationResult.RebootRequired) {
-                LogMessage "Updates installed successfully. Reboot is required."
-            } else {
-                LogMessage "Updates installed successfully. No reboot required."
-            }
+            
+            LogMessage "Updates installed successfully. Reboot is recommended to complete the update process."
         } else {
             LogMessage "No updates found."
         }
@@ -130,18 +127,39 @@ function InstallUpdatesWin11 {
     }
 }
 
+
 # Function to run Disk Cleanup
 function RunDiskCleanup {
-    cleanmgr.exe -ArgumentList /sagerun:1
+    LogMessage "Disk cleanup started."
+
+    try {
+        # Run the disk cleanup utility
+        cleanmgr.exe -ArgumentList /sagerun:1
+
+        LogMessage "Disk cleanup completed successfully."
+    } catch {
+        LogMessage "Failed to run disk cleanup. Error: $_"
+    }
 }
+
 
 # Function to optimize drives
 function OptimizeDrives {
-    OptimizeVolume -DriveLetter "C" -Defrag -Verbose
-    # If you have additional drives, add their letters and run OptimizeVolume for them as well.
-    # For example:
-    # OptimizeVolume -DriveLetter "D" -Defrag -Verbose
+    $drivesToOptimize = @("C", "D") # Add more drive letters here if needed
+
+    foreach ($driveLetter in $drivesToOptimize) {
+        LogMessage "Drive optimization started for Drive $driveLetter."
+
+        try {
+            Optimize-Volume -DriveLetter $driveLetter -Defrag -Verbose
+
+            LogMessage "Drive optimization completed successfully for Drive $driveLetter."
+        } catch {
+            LogMessage "Failed to optimize Drive $driveLetter. Error: $_"
+        }
+    }
 }
+
 
 # Function to check disk errors
 function CheckDiskErrors {
@@ -278,7 +296,8 @@ RunDiskCleanup
 DeleteTemp
 OptimizeDrives
 CheckDiskErrors
-LogMessage "Restarting the computer..."
 if (IsThirdSunday) {
+    LogMessage "Restarting the computer..."
     Restart-Computer -Force
+
 }
