@@ -24,7 +24,7 @@ Run this command as adminstator to schedule this script to be run every Sunday a
         schtasks /Create /TN "SundayCleaningTask" /SC WEEKLY /D SUN /ST 03:00 /TR "powershell.exe -ExecutionPolicy Bypass -File C:\Tech\SundayCleaning.ps1" /RU SYSTEM /RL HIGHEST /F
 
 .VERSION
-    1.1.0
+    1.1.1
 #>
 
 function LogMessage {
@@ -259,7 +259,7 @@ function ResetNetworkConnection {
 }
 
 # Main Script
-UpdateScriptFromGitHub
+#UpdateScriptFromGitHub
 ClearPrintQueue
 SyncComputerTime
 ResetNetworkConnection
