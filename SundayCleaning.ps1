@@ -1,6 +1,6 @@
 <#
 This is desinged to be run every Sunday, it does the following.
-    Check for and apply updates to the script from GitHub
+    #Future function: Check for and apply updates to the script from GitHub
     Clears the print queue.
     Synchronizes the computer time with an internet time server.
     Resets the network connection.
@@ -10,8 +10,9 @@ This is desinged to be run every Sunday, it does the following.
     Runs Disk Cleanup.
     Deletes temporary files and folders.
     Optimizes the C drive (and additional drives if added).
-    Checks for disk errors and fixes them if found.
-    Restarts the computer if it is the 3rd Sunday.
+    if it is the 3rd Sunday
+        Checks for disk errors if any are found it will have a full check disk run on the next reboot.
+        Restarts the computer.
 
 The log file is located at C:\Tech\SundayCleaningLog.txt
 
@@ -163,9 +164,24 @@ function OptimizeDrives {
 
 # Function to check disk errors
 function CheckDiskErrors {
-    chkdsk /f /r
-}
+    LogMessage "Running Check Disk (non-destructive) for C: drive..."
+    
+    try {
+        # Run chkdsk with /scan option for the C: drive
+        & chkdsk C: /scan
 
+        # Check the exit code of chkdsk to determine if any issues were found
+        if ($LASTEXITCODE -eq 0) {
+            LogMessage "Check Disk completed without errors."
+        } else {
+            LogMessage "Check Disk found errors or issues. Scheduling full scan and repair on the next reboot..."
+            # Schedule full scan and repair on the next reboot
+            & chkdsk C: /f /r
+        }
+    } catch {
+        LogMessage "An error occurred while running Check Disk: $_"
+    }
+}
 # function to clear the print queue
 function ClearPrintQueue {
     $spoolerService = Get-Service -Name Spooler -ErrorAction SilentlyContinue
@@ -295,8 +311,8 @@ ClearBrowserCache
 RunDiskCleanup
 DeleteTemp
 OptimizeDrives
-CheckDiskErrors
 if (IsThirdSunday) {
+    CheckDiskErrors
     LogMessage "Restarting the computer..."
     Restart-Computer -Force
 
