@@ -449,6 +449,10 @@ schtasks /run /tn "\Microsoft\Windows\Registry\RegIdleBackup"
 # UI Tweaks
 ##########
 
+# Set the taskbar to the Left
+Write-Host "Move the task bar to the left..."
+New-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAl" -Value 0 -Force
+
 # Show all tray icons
 Write-Host "Showing all tray icons..."
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer" -Name "EnableAutoTray" -Type DWord -Value 0
