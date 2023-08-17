@@ -1069,22 +1069,39 @@ Set-NetFirewallRule -DisplayGroup "File And Printer Sharing" -Enabled True -Prof
 REG ADD "HKLM\Software\Policies\Microsoft\Windows NT\DNSClient" /V "EnableMulticast" /D "0" /T REG_DWORD /F
 
 # Network Power Settings
-Disable-NetAdapterPowerManagement -Name Ethernet
-Set-NetAdapterAdvancedProperty -Name Ethernet -DisplayName "Energy-Efficient Ethernet" -DisplayValue "Disabled"
-Set-NetAdapterAdvancedProperty -Name Ethernet -DisplayName "Flow Control" -DisplayValue "Disabled"
-Set-NetAdapterAdvancedProperty -Name Ethernet -DisplayName "Receive Side Scaling" -DisplayValue "Disabled"
-Set-NetAdapterAdvancedProperty -Name Ethernet -DisplayName "Green Ethernet" -DisplayValue "Disabled"
-Set-NetAdapterAdvancedProperty -Name Ethernet -DisplayName "Power Saving Mode" -DisplayValue "Disabled"
-Set-NetAdapterAdvancedProperty -Name Ethernet -DisplayName "ARP Offload" -DisplayValue "Disabled"
-Set-NetAdapterAdvancedProperty -Name Ethernet -DisplayName "NS Offload" -DisplayValue "Disabled"
-Set-NetAdapterAdvancedProperty -Name Ethernet -DisplayName "TCP Checksum Offload (IPv4)" -DisplayValue "Disabled"
-Set-NetAdapterAdvancedProperty -Name Ethernet -DisplayName "UDP Checksum Offload (IPv4)" -DisplayValue "Disabled"
-Set-NetAdapterAdvancedProperty -Name Ethernet -DisplayName "Interrupt Moderation" -DisplayValue "Disabled"
-Set-NetAdapterAdvancedProperty -Name Ethernet -DisplayName "Jumbo Frame" -DisplayValue "Disabled"
-Set-NetAdapterAdvancedProperty -Name Ethernet -DisplayName "Jumbo Packet" -DisplayValue "Disabled"
-Set-NetAdapterAdvancedProperty -Name Ethernet -DisplayName "Packet Priority & VLAN" -DisplayValue "Disabled"
-Set-NetAdapterAdvancedProperty -Name Ethernet -DisplayName "Enable PME" -DisplayValue "Disabled"
-Set-NetAdapterAdvancedProperty -Name Ethernet -DisplayName "Interrupt Moderation" -DisplayValue "Disabled"
+# Disable power management for the network adapter
+try {
+    Disable-NetAdapterPowerManagement -Name Ethernet
+} catch {
+    Write-Host "An error occurred while disabling power management: $($_.Exception.Message)"
+}
+
+# Set individual advanced properties for the network adapter
+$advancedProperties = @(
+    "Energy-Efficient Ethernet",
+    "Flow Control",
+    "Receive Side Scaling",
+    "Green Ethernet",
+    "Power Saving Mode",
+    "ARP Offload",
+    "NS Offload",
+    "TCP Checksum Offload (IPv4)",
+    "UDP Checksum Offload (IPv4)",
+    "Interrupt Moderation",
+    "Jumbo Frame",
+    "Jumbo Packet",
+    "Packet Priority & VLAN",
+    "Enable PME"
+)
+
+foreach ($property in $advancedProperties) {
+    try {
+        Set-NetAdapterAdvancedProperty -Name Ethernet -DisplayName $property -DisplayValue "Disabled"
+    } catch {
+        Write-Host "An error occurred while setting advanced property '$property': $($_.Exception.Message)"
+    }
+}
+
 
 ##########
 # Restart
