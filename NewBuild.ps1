@@ -117,7 +117,7 @@ SCHTASKS /CREATE /SC MONTHLY /M * /MO THIRD /D SUN /ST 03:00 /TN "Monthly Clean"
 SCHTASKS /CREATE /SC MONTHLY /M * /MO THIRD /D SUN /ST 06:00 /TN "Monthly Reboot" /TR "C:\Windows\System32\shutdown.exe /r /f /c" /RL HIGHEST
 
 # Enable Windows Sandbox
-Enable-WindowsOptionalFeature -FeatureName "Containers-DisposableClientVM" -All -Online
+Enable-WindowsOptionalFeature -FeatureName "Containers-DisposableClientVM" -All -Online -NoRestart
 
 # This function will run later
 # This as been discontiued, It prevented software from installing
@@ -449,9 +449,38 @@ schtasks /run /tn "\Microsoft\Windows\Registry\RegIdleBackup"
 # UI Tweaks
 ##########
 
+# Task View button - Hide 0  Show 1
+try {
+    Write-Host "Hide Task View button on the task bar"
+    Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name 'ShowTaskViewButton' -Type DWord -Value 0
+} catch {
+    Write-Host "An error occurred while modifying ShowTaskViewButton: $($_.Exception.Message)"
+}
+
+# Widgets button on the task bar - Hide 0  Show 1
+try {
+    Write-Host "Hide widgets button on the task bar"
+    Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name 'TaskbarDa' -Type DWord -Value 0
+} catch {
+    Write-Host "An error occurred while modifying TaskbarDa: $($_.Exception.Message)"
+}
+
+# Remove Chat button on task bar
+try {
+    Write-Host "Remvoe Chat button on the task bar"
+    REG ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v ShowTaskViewButton /t REG_DWORD /d 0 /f
+    REG ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarMn /t REG_DWORD /d 0 /f
+} catch {
+    Write-Host "An error occurred while modifying registry values: $($_.Exception.Message)"
+}
+
 # Set the taskbar to the Left
-Write-Host "Move the task bar to the left..."
-New-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAl" -Value 0 -Force
+try {
+    Write-Host "Move the taskbar to the left..."
+    New-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAl" -Value 0 -Force
+} catch {
+    Write-Host "An error occurred while moving the taskbar: $($_.Exception.Message)"
+}
 
 # Show all tray icons
 Write-Host "Showing all tray icons..."
