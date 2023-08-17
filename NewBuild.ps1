@@ -62,6 +62,11 @@
 07/03/2023 - Infinity Add Ons
     Enable Windows Sandbox
 
+08/17/2023 - UI Tweaks
+    Hide Task View button on the task bar    
+    Hide the widgets button on the task bar
+    Remove Chat button on task bar
+    Set the taskbar to the Left
 
 #>
 
@@ -449,7 +454,7 @@ schtasks /run /tn "\Microsoft\Windows\Registry\RegIdleBackup"
 # UI Tweaks
 ##########
 
-# Task View button - Hide 0  Show 1
+# Hide Task View button on the task bar - Hide 0  Show 1
 try {
     Write-Host "Hide Task View button on the task bar"
     Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name 'ShowTaskViewButton' -Type DWord -Value 0
@@ -457,7 +462,7 @@ try {
     Write-Host "An error occurred while modifying ShowTaskViewButton: $($_.Exception.Message)"
 }
 
-# Widgets button on the task bar - Hide 0  Show 1
+# Hide the widgets button on the task bar - Hide 0  Show 1
 try {
     Write-Host "Hide widgets button on the task bar"
     Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name 'TaskbarDa' -Type DWord -Value 0
