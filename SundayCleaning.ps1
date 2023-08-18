@@ -27,6 +27,29 @@ Run this command as adminstator to schedule this script to be run every Sunday a
 .VERSION
     1.1.1
 #>
+function Main {
+    #UpdateScriptFromGitHub
+    ClearPrintQueue
+    SyncComputerTime
+    ResetNetworkConnection
+    if (IsThirdSunday) {
+        InstallPSWindowsUpdateModule
+        if ([System.Environment]::OSVersion.Version -ge [Version]"10.0.22000") {
+            InstallUpdatesWin11
+        } else {
+            InstallUpdatesWin10
+        }
+        CheckDiskErrors
+        LogMessage "Restarting the computer..."
+        Restart-Computer -Force
+    } else {
+        LogMessage "Today is not the 3rd Sunday of the month. No updates will be installed."
+    }
+    ClearBrowserCache
+    RunDiskCleanup
+    DeleteTemp
+    OptimizeDrives
+}
 
 function LogMessage {
     param(
@@ -38,14 +61,6 @@ function LogMessage {
     $LogEntry | Out-File -FilePath $LogFile -Append
 }
 
-# Function to check if the current day is the 3rd Sunday of the month
-function IsThirdSunday {
-    $today = Get-Date
-    $dayOfWeek = $today.DayOfWeek
-    $weekOfMonth = [math]::ceiling($today.Day / 7)
-
-    return ($dayOfWeek -eq 'Sunday' -and $weekOfMonth -eq 3)
-}
 
 # Function to check for and apply updates to the script from GitHub
 function UpdateScriptFromGitHub {
@@ -74,6 +89,115 @@ function UpdateScriptFromGitHub {
         LogMessage "Failed to update the script from GitHub. Error: $_"
     }
 }
+
+# function to clear the print queue
+function ClearPrintQueue {
+    $spoolerService = Get-Service -Name Spooler -ErrorAction SilentlyContinue
+
+    if ($null -eq $spoolerService) {
+        LogMessage "Print Spooler service is not installed or cannot be found."
+        return
+    }
+
+    if ($spoolerService.Status -eq 'Running') {
+        LogMessage "Stopping Print Spooler service..."
+        Stop-Service -Name Spooler -Force
+
+        # Wait a moment to ensure the service is stopped
+        Start-Sleep -Seconds 5
+    }
+
+    $printJobs = Get-WmiObject -Query "Select * From Win32_PrintJob" -ErrorAction SilentlyContinue
+
+    if ($null -ne $printJobs) {
+        LogMessage "Deleting print jobs..."
+        $printJobs | ForEach-Object {
+            $_.Delete()
+        }
+    } else {
+        LogMessage "No print jobs found in the queue."
+    }
+
+    LogMessage "Starting Print Spooler service..."
+    Start-Service -Name Spooler
+}
+
+# function to sync the computer time to the internet
+function SyncComputerTime {
+    # Get the current system date and time
+    $currentDateTime = Get-Date
+
+    # List of NTP servers to try
+    $ntpServers = @("time.windows.com", "0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org", "3.pool.ntp.org")
+    
+    $ntpTime = $null
+    foreach ($ntpServer in $ntpServers) {
+        try {
+            # Use the resolved IP address of the NTP server for accuracy and reliability
+            $ntpIpAddress = [System.Net.Dns]::GetHostAddresses($ntpServer)[0].IPAddressToString
+            $ntpResult = Invoke-WebRequest -Uri "http://$ntpIpAddress" -UseBasicParsing
+            $ntpTime = [DateTime]::ParseExact($ntpResult.Headers.Date, "ddd, dd MMM yyyy HH:mm:ss 'GMT'", [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::AssumeUniversal)
+            break  # Exit the loop if successful
+        } catch {
+            continue  # Try the next NTP server if this one fails
+        }
+    }
+
+    if ($ntpTime -eq $null) {
+        LogMessage "Failed to retrieve internet time from any NTP server. Ensure that you have internet connectivity and try again."
+        return
+    }
+
+    # Calculate the time difference between system time and internet time
+    $timeDifference = $ntpTime - $currentDateTime
+
+    # Set the system time to the internet time
+    Set-Date -Date ($currentDateTime + $timeDifference)
+
+    LogMessage "Computer time synced to internet time from $($ntpServers[0])."
+}
+
+
+function ResetNetworkConnection {
+    # Store the current network configuration
+    $networkConfig = Get-NetIPConfiguration | Where-Object { $_.InterfaceAlias -eq 'Ethernet' }  # Replace 'Ethernet' with your network adapter alias
+
+    # Purge DNS resolver cache using ipconfig
+    LogMessage "Purging DNS resolver cache..."
+    ipconfig /flushdns
+
+    # Check if the interface is configured for DHCP
+    if ($networkConfig.Dhcp) {
+        LogMessage "Skipping network reset as the interface is configured for DHCP."
+        return
+    }
+
+    # Reset the network connection using netsh
+    LogMessage "Resetting network connection..."
+    netsh interface set interface $networkConfig.InterfaceAlias admin=DISABLED
+    netsh interface set interface $networkConfig.InterfaceAlias admin=ENABLED
+
+    # Sleep for a few seconds to allow the network to reset
+    Start-Sleep -Seconds 5
+
+    # Restore the static IP address, subnet mask, and gateway settings
+    LogMessage "Restoring static IP settings..."
+    netsh interface ipv4 set address name=$networkConfig.InterfaceAlias source=static address=$networkConfig.IPv4Address IPAddress=$networkConfig.IPAddress
+    netsh interface ipv4 set address name=$networkConfig.InterfaceAlias source=static address=$networkConfig.IPv4Address IPAddress=$networkConfig.IPAddress mask=$networkConfig.IPv4Netmask
+    netsh interface ipv4 set address name=$networkConfig.InterfaceAlias gateway=$networkConfig.IPv4DefaultGateway gwmetric=$networkConfig.IPv4DefaultGatewayMetric
+
+    LogMessage "Network connection has been reset without losing static IP settings."
+}
+
+# Function to check if the current day is the 3rd Sunday of the month
+function IsThirdSunday {
+    $today = Get-Date
+    $dayOfWeek = $today.DayOfWeek
+    $weekOfMonth = [math]::ceiling($today.Day / 7)
+
+    return ($dayOfWeek -eq 'Sunday' -and $weekOfMonth -eq 3)
+}
+
 
 function InstallPSWindowsUpdateModule {
     # Check if the PSWindowsUpdate module is installed
@@ -128,40 +252,6 @@ function InstallUpdatesWin11 {
     }
 }
 
-
-# Function to run Disk Cleanup
-function RunDiskCleanup {
-    LogMessage "Disk cleanup started."
-
-    try {
-        # Run the disk cleanup utility
-        cleanmgr.exe -ArgumentList /sagerun:1
-
-        LogMessage "Disk cleanup completed successfully."
-    } catch {
-        LogMessage "Failed to run disk cleanup. Error: $_"
-    }
-}
-
-
-# Function to optimize drives
-function OptimizeDrives {
-    $drivesToOptimize = @("C", "D") # Add more drive letters here if needed
-
-    foreach ($driveLetter in $drivesToOptimize) {
-        LogMessage "Drive optimization started for Drive $driveLetter."
-
-        try {
-            Optimize-Volume -DriveLetter $driveLetter -Defrag -Verbose
-
-            LogMessage "Drive optimization completed successfully for Drive $driveLetter."
-        } catch {
-            LogMessage "Failed to optimize Drive $driveLetter. Error: $_"
-        }
-    }
-}
-
-
 # Function to check disk errors
 function CheckDiskErrors {
     LogMessage "Running Check Disk (non-destructive) for C: drive..."
@@ -182,60 +272,25 @@ function CheckDiskErrors {
         LogMessage "An error occurred while running Check Disk: $_"
     }
 }
-# function to clear the print queue
-function ClearPrintQueue {
-    $spoolerService = Get-Service -Name Spooler -ErrorAction SilentlyContinue
 
-    if ($null -eq $spoolerService) {
-        LogMessage "Print Spooler service is not installed or cannot be found."
-        return
-    }
-
-    if ($spoolerService.Status -eq 'Running') {
-        LogMessage "Stopping Print Spooler service..."
-        Stop-Service -Name Spooler -Force
-
-        # Wait a moment to ensure the service is stopped
-        Start-Sleep -Seconds 5
-    }
-
-    $printJobs = Get-WmiObject -Query "Select * From Win32_PrintJob" -ErrorAction SilentlyContinue
-
-    if ($null -ne $printJobs) {
-        LogMessage "Deleting print jobs..."
-        $printJobs | ForEach-Object {
-            $_.Delete()
-        }
-    } else {
-        LogMessage "No print jobs found in the queue."
-    }
-
-    LogMessage "Starting Print Spooler service..."
-    Start-Service -Name Spooler
+# Clear browser cache
+Function ClearBrowserCache {
+    RunDll32.exe InetCpl.cpl,ClearMyTracksByProcess 8
+    RunDll32.exe InetCpl.cpl,ClearMyTracksByProcess 2
 }
 
-# function to sync the computer time to the internet
-function SyncComputerTime {
-    # Get the current system date and time
-    $currentDateTime = Get-Date
+# Function to run Disk Cleanup
+function RunDiskCleanup {
+    LogMessage "Disk cleanup started."
 
-    # Get the current internet time using the NTP (Network Time Protocol) server "time.windows.com"
-    $ntpServer = "time.windows.com"
     try {
-        $ntpResult = Invoke-WebRequest -Uri "http://$ntpServer" -UseBasicParsing
-        $ntpTime = [DateTime]::ParseExact($ntpResult.Headers.Date, "ddd, dd MMM yyyy HH:mm:ss 'GMT'", [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::AssumeUniversal)
+        # Run the disk cleanup utility
+        cleanmgr.exe -ArgumentList /sagerun:1
+
+        LogMessage "Disk cleanup completed successfully."
     } catch {
-        LogMessage "Failed to retrieve internet time from $ntpServer. Ensure that you have internet connectivity."
-        return
+        LogMessage "Failed to run disk cleanup. Error: $_"
     }
-
-    # Calculate the time difference between system time and internet time
-    $timeDifference = $ntpTime - $currentDateTime
-
-    # Set the system time to the internet time
-    Set-Date -Date ($currentDateTime + $timeDifference)
-
-    LogMessage "Computer time synced to internet time from $ntpServer."
 }
 
 # Delete Temp Files
@@ -255,65 +310,22 @@ Function DeleteTemp {
     Remove-FilesAndFolders -Path $CBSTempPath
 }
 
-# Clear browser cache
-Function ClearBrowserCache {
-    RunDll32.exe InetCpl.cpl,ClearMyTracksByProcess 8
-    RunDll32.exe InetCpl.cpl,ClearMyTracksByProcess 2
-}
+# Function to optimize drives
+function OptimizeDrives {
+    $drivesToOptimize = @("C", "D") # Add more drive letters here if needed
 
-function ResetNetworkConnection {
-    # Store the current network configuration
-    $networkConfig = Get-NetIPConfiguration | Where-Object { $_.InterfaceAlias -eq 'Ethernet' }  # Replace 'Ethernet' with your network adapter alias
+    foreach ($driveLetter in $drivesToOptimize) {
+        LogMessage "Drive optimization started for Drive $driveLetter."
 
-    # Purge DNS resolver cache using ipconfig
-    LogMessage "Purging DNS resolver cache..."
-    ipconfig /flushdns
+        try {
+            Optimize-Volume -DriveLetter $driveLetter -Defrag -Verbose
 
-    # Check if the interface is configured for DHCP
-    if ($networkConfig.Dhcp) {
-        LogMessage "Skipping network reset as the interface is configured for DHCP."
-        return
+            LogMessage "Drive optimization completed successfully for Drive $driveLetter."
+        } catch {
+            LogMessage "Failed to optimize Drive $driveLetter. Error: $_"
+        }
     }
-
-    # Reset the network connection using netsh
-    LogMessage "Resetting network connection..."
-    netsh interface set interface $networkConfig.InterfaceAlias admin=DISABLED
-    netsh interface set interface $networkConfig.InterfaceAlias admin=ENABLED
-
-    # Sleep for a few seconds to allow the network to reset
-    Start-Sleep -Seconds 5
-
-    # Restore the static IP address, subnet mask, and gateway settings
-    LogMessage "Restoring static IP settings..."
-    netsh interface ipv4 set address name=$networkConfig.InterfaceAlias source=static address=$networkConfig.IPv4Address IPAddress=$networkConfig.IPAddress
-    netsh interface ipv4 set address name=$networkConfig.InterfaceAlias source=static address=$networkConfig.IPv4Address IPAddress=$networkConfig.IPAddress mask=$networkConfig.IPv4Netmask
-    netsh interface ipv4 set address name=$networkConfig.InterfaceAlias gateway=$networkConfig.IPv4DefaultGateway gwmetric=$networkConfig.IPv4DefaultGatewayMetric
-
-    LogMessage "Network connection has been reset without losing static IP settings."
 }
 
 # Main Script
-#UpdateScriptFromGitHub
-ClearPrintQueue
-SyncComputerTime
-ResetNetworkConnection
-if (IsThirdSunday) {
-    InstallPSWindowsUpdateModule
-    if ([System.Environment]::OSVersion.Version -ge [Version]"10.0.22000") {
-        InstallUpdatesWin11
-    } else {
-        InstallUpdatesWin10
-    }
-} else {
-    LogMessage "Today is not the 3rd Sunday of the month. No updates will be installed."
-}
-ClearBrowserCache
-RunDiskCleanup
-DeleteTemp
-OptimizeDrives
-if (IsThirdSunday) {
-    CheckDiskErrors
-    LogMessage "Restarting the computer..."
-    Restart-Computer -Force
-
-}
+Main
