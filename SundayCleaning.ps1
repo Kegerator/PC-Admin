@@ -31,7 +31,7 @@ function Main {
     #UpdateScriptFromGitHub
     ClearPrintQueue
     SyncComputerTime
-    ResetNetworkConnection
+    ResetNetworkConnection -InterfaceAlias 'Ethernet'
     if (IsThirdSunday) {
         InstallPSWindowsUpdateModule
         if ([System.Environment]::OSVersion.Version -ge [Version]"10.0.22000") {
@@ -157,36 +157,65 @@ function SyncComputerTime {
     LogMessage "Computer time synced to internet time from $($ntpServers[0])."
 }
 
-
 function ResetNetworkConnection {
-    # Store the current network configuration
-    $networkConfig = Get-NetIPConfiguration | Where-Object { $_.InterfaceAlias -eq 'Ethernet' }  # Replace 'Ethernet' with your network adapter alias
+    param (
+        [string]$InterfaceAlias
+    )
 
-    # Purge DNS resolver cache using ipconfig
-    LogMessage "Purging DNS resolver cache..."
-    ipconfig /flushdns
+    try {
+        # Store the current network configuration
+        $networkConfig = Get-NetIPConfiguration | Where-Object { $_.InterfaceAlias -eq $InterfaceAlias }
 
-    # Check if the interface is configured for DHCP
-    if ($networkConfig.Dhcp) {
-        LogMessage "Skipping network reset as the interface is configured for DHCP."
-        return
+        # Extract IPv4 address, netmask, and default gateway values
+        $IPv4Address = $networkConfig.IPv4Address.IPAddress
+        $IPv4Netmask = $networkConfig.IPv4Address.PrefixLength
+        $IPv4DefaultGateway = $networkConfig.IPv4DefaultGateway.NextHop
+
+        # Purge DNS resolver cache using ipconfig
+        LogMessage "Purging DNS resolver cache..."
+        ipconfig /flushdns
+
+        # Check if the interface is configured for DHCP
+        if ($networkConfig.Dhcp) {
+            LogMessage "Skipping network reset as the interface is configured for DHCP."
+            return
+        }
+
+        # Debug output for variables
+        LogMessage "InterfaceAlias: $InterfaceAlias"
+        LogMessage "IPv4Address: $IPv4Address"
+        LogMessage "IPv4Netmask: $IPv4Netmask"
+        LogMessage "IPv4DefaultGateway: $IPv4DefaultGateway"
+
+        # Reset the network connection using netsh
+        LogMessage "Disabling network connection..."
+        netsh interface set interface $networkConfig.InterfaceAlias admin=DISABLED
+
+        # Sleep for a few seconds to allow the network to close
+        Start-Sleep -Seconds 5
+
+        # Enable the network connection 
+        LogMessage "Enabling network connection..."
+        netsh interface set interface $networkConfig.InterfaceAlias admin=ENABLED
+
+        # Sleep for a few seconds to allow the network to come up
+        Start-Sleep -Seconds 5
+
+        # Restore the static IP settings
+        LogMessage "Restoring static IP settings..."
+        Set-NetIPAddress -InterfaceAlias $InterfaceAlias -IPAddress $IPv4Address -PrefixLength $IPv4Netmask
+        Set-NetIPInterface -InterfaceAlias $InterfaceAlias -InterfaceMetric $IPv4DefaultGatewayMetric
+
+        # Check if the route already exists before adding it
+        $existingRoute = Get-NetRoute -InterfaceAlias $InterfaceAlias -DestinationPrefix '0.0.0.0/0'
+        if ($existingRoute -eq $null) {
+            New-NetRoute -InterfaceAlias $InterfaceAlias -DestinationPrefix '0.0.0.0/0' -NextHop $IPv4DefaultGateway
+        }
+
+        LogMessage "Network connection has been reset without losing static IP settings."
+    } catch {
+        LogMessage "An error occurred: $($_.Exception.Message)" -ForegroundColor Red
     }
-
-    # Reset the network connection using netsh
-    LogMessage "Resetting network connection..."
-    netsh interface set interface $networkConfig.InterfaceAlias admin=DISABLED
-    netsh interface set interface $networkConfig.InterfaceAlias admin=ENABLED
-
-    # Sleep for a few seconds to allow the network to reset
-    Start-Sleep -Seconds 5
-
-    # Restore the static IP address, subnet mask, and gateway settings
-    LogMessage "Restoring static IP settings..."
-    netsh interface ipv4 set address name=$networkConfig.InterfaceAlias source=static address=$networkConfig.IPv4Address IPAddress=$networkConfig.IPAddress
-    netsh interface ipv4 set address name=$networkConfig.InterfaceAlias source=static address=$networkConfig.IPv4Address IPAddress=$networkConfig.IPAddress mask=$networkConfig.IPv4Netmask
-    netsh interface ipv4 set address name=$networkConfig.InterfaceAlias gateway=$networkConfig.IPv4DefaultGateway gwmetric=$networkConfig.IPv4DefaultGatewayMetric
-
-    LogMessage "Network connection has been reset without losing static IP settings."
 }
 
 # Function to check if the current day is the 3rd Sunday of the month
