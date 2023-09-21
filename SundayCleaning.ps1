@@ -175,12 +175,6 @@ function ResetNetworkConnection {
         LogMessage "Purging DNS resolver cache..."
         ipconfig /flushdns
 
-        # Check if the interface is configured for DHCP
-        if ($networkConfig.Dhcp) {
-            LogMessage "Skipping network reset as the interface is configured for DHCP."
-            return
-        }
-
         # Debug output for variables
         LogMessage "InterfaceAlias: $InterfaceAlias"
         LogMessage "IPv4Address: $IPv4Address"
