@@ -335,7 +335,7 @@ Function DeleteTemp {
 
 # Function to optimize drives
 function OptimizeDrives {
-    $drivesToOptimize = @("C", "D") # Add more drive letters here if needed
+    $drivesToOptimize = @("C") # Add more drive letters here if needed
 
     foreach ($driveLetter in $drivesToOptimize) {
         LogMessage "Drive optimization started for Drive $driveLetter."
