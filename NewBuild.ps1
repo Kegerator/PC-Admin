@@ -317,20 +317,55 @@ schtasks /Change /TN "Microsoft\XblGameSave\XblGameSaveTaskLogon" /disable
 # Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\Settings\AllowYourAccount" -Name "NoConnectedUser" -Type DWord -Value 1
 
 # Disable Offer to Save Passwords in Google Chrome for All Users
-Write-Host "Disable Offer to Save Passwords in Google Chrome for All Users"
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Google\Chrome" -Name "PasswordManagerEnabled" -Type DWord -Value 0
+# Define a function to disable the offer to save passwords in Google Chrome
+function DisableChromePasswordManager {
+    try {
+        # Set the registry value to disable Chrome's Password Manager
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Google\Chrome" -Name "PasswordManagerEnabled" -Type DWord -Value 0
 
-# Disable Save Passwords in Microsoft Edge
-Write-Host "Disable Save Passwords in Microsoft Edge"
-Set-ItemProperty "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main" -Name "FormSuggest Passwords" -Type String -Value "no"
+        # Output a success message
+        Write-Host "Password Manager in Google Chrome has been disabled for all users."
+    } catch {
+        # Output a detailed error message if an exception occurs
+        Write-Host "An error occurred while disabling Chrome's Password Manager:"
+        Write-Host "$($_.Exception.Message)"
+    }
+}
+# Call the function to disable Chrome's Password Manager
+DisableChromePasswordManager
+
+
+function DisableEdgeSavePasswords {
+    Write-Host "Disabling password saving in Microsoft Edge..."
+    try {
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main" -Name "FormSuggest Passwords" -Type String -Value "no"
+
+        # Output a success message
+        Write-Host "Password saving in Microsoft Edge has been disabled."
+    } catch {
+        # Output a detailed error message if an exception occurs
+        Write-Host "An error occurred while disabling password saving in Microsoft Edge:"
+        Write-Host "$($_.Exception.Message)"
+    }
+}
+# Call the function to disable password saving in Microsoft Edge
+DisableEdgeSavePasswords
 
 # Disable Sharing Wizzard
 Write-Host "Disabling Sharing Wizzard"
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "SharingWizardOn" -Type DWord -Value 0
+try {
+    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "SharingWizardOn" -Type DWord -Value 0
+} catch {
+    Write-Host "An error occurred: $_.Exception.Message"
+}
 
 # Disable Telemetry
 Write-Host "Disabling Telemetry..."
-Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry" -Type DWord -Value 0
+try {
+    Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry" -Type DWord -Value 0
+} catch {
+    Write-Host "An error occurred: $_.Exception.Message"
+}
 
 # Disable Wi-Fi Sense
 Write-Host "Disabling Wi-Fi Sense..."
@@ -340,19 +375,91 @@ New-Item -Path "HKLM:\Software\Microsoft\PolicyManager\default\WiFi\AllowWiFiHot
 Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\default\WiFi\AllowWiFiHotSpotReporting" -Name "Value" -Type DWord -Value 0
 Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\default\WiFi\AllowAutoConnectToWiFiSenseHotspots" -Name "Value" -Type DWord -Value 0
 
-# Disable SmartScreen Filter
-Write-Host "Disabling SmartScreen Filter..."
-Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Explorer" -Name "SmartScreenEnabled" -Type String -Value "Off"
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\AppHost" -Name "EnableWebContentEvaluation" -Type DWord -Value 0
+# Check if the computer is a laptop or desktop, if it is a desktop disable Wi-Fi Sense
+try {
+    $computerSystem = Get-WmiObject -Class Win32_ComputerSystem -ErrorAction Stop
+    $battery = Get-WmiObject -Class Win32_Battery -ErrorAction Stop
+
+    if ($battery -eq $null) {
+        Write-Host "This is a desktop computer."
+        
+        # Disable Wi-Fi Sense
+        Write-Host "Disabling Wi-Fi Sense..."
+        $wifiPolicyKeyPath = "HKLM:\Software\Microsoft\PolicyManager\default\WiFi"
+        $wifiHotspotReportingPath = Join-Path -Path $wifiPolicyKeyPath -ChildPath "AllowWiFiHotSpotReporting"
+        $wifiAutoConnectPath = Join-Path -Path $wifiPolicyKeyPath -ChildPath "AllowAutoConnectToWiFiSenseHotspots"
+
+        if (!(Test-Path $wifiHotspotReportingPath)) {
+            New-Item -Path $wifiHotspotReportingPath -Force | Out-Null
+        }
+
+        if (!(Test-Path $wifiAutoConnectPath)) {
+            New-Item -Path $wifiAutoConnectPath -Force | Out-Null
+        }
+
+        Set-ItemProperty -Path $wifiHotspotReportingPath -Name "Value" -Type DWord -Value 0
+        Set-ItemProperty -Path $wifiAutoConnectPath -Name "Value" -Type DWord -Value 0
+
+        Write-Host "Wi-Fi Sense has been successfully disabled on this desktop computer."
+    } else {
+        Write-Host "This is a laptop computer. WiFi Sense has Not been disabled"
+    }
+} catch {
+    Write-Host "An error occurred: $_"
+}
+
+# Enable SmartScreen Filter and Web Contect Evaluation
+try {
+    # Enable SmartScreen Filter
+    Write-Host "Enabling SmartScreen Filter..."
+    Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Explorer" -Name "SmartScreenEnabled" -Type String -Value "Prompt"
+
+    # Enable Web Content Evaluation
+    Write-Host "Enabling Web Content Evaluation..."
+    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\AppHost" -Name "EnableWebContentEvaluation" -Type DWord -Value 1
+
+    Write-Host "SmartScreen Filter and Web Content Evaluation have been successfully enabled."
+} catch {
+    Write-Host "An error occurred: $_"
+}
 
 # Disable Bing Search in Start Menu
-Write-Host "Disabling Bing Search in Start Menu..."
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "BingSearchEnabled" -Type DWord -Value 0
+try {
+    Write-Host "Disabling Bing Search in Start Menu..."
+    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "BingSearchEnabled" -Type DWord -Value 0
+    Write-Host "Bing Search in Start Menu has been successfully disabled."
+} catch {
+    Write-Host "An error occurred: $_"
+}
 
 # Disable Location Tracking
-Write-Host "Disabling Location Tracking..."
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Overrides\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}" -Name "SensorPermissionState" -Type DWord -Value 0
-Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Services\lfsvc\Service\Configuration" -Name "Status" -Type DWord -Value 0
+try {
+    $locationTrackingRegistryPath1 = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Overrides\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}"
+    $locationTrackingRegistryPath2 = "HKLM:\System\CurrentControlSet\Services\lfsvc\Service\Configuration"
+
+    Write-Host "Disabling Location Tracking..."
+
+    # Disable Location Tracking in Registry Path 1
+    if (Test-Path $locationTrackingRegistryPath1) {
+        Set-ItemProperty -Path $locationTrackingRegistryPath1 -Name "SensorPermissionState" -Type DWord -Value 0
+        Write-Host "Location Tracking in Registry Path 1 has been disabled."
+    } else {
+        Write-Host "Location Tracking in Registry Path 1 is not found."
+    }
+
+    # Disable Location Tracking in Registry Path 2
+    if (Test-Path $locationTrackingRegistryPath2) {
+        Set-ItemProperty -Path $locationTrackingRegistryPath2 -Name "Status" -Type DWord -Value 0
+        Write-Host "Location Tracking in Registry Path 2 has been disabled."
+    } else {
+        Write-Host "Location Tracking in Registry Path 2 is not found."
+    }
+
+    Write-Host "Location Tracking has been successfully disabled."
+} catch {
+    Write-Host "An error occurred: $_"
+}
+
 
 # Disable Feedback
 Write-Host "Disabling Feedback..."
@@ -360,29 +467,85 @@ If (!(Test-Path "HKCU:\Software\Microsoft\Siuf\Rules")) {
 New-Item -Path "HKCU:\Software\Microsoft\Siuf\Rules" -Force | Out-Null
 }
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Siuf\Rules" -Name "NumberOfSIUFInPeriod" -Type DWord -Value 0
+# Disable Feedback
+Write-Host "Disabling Feedback..."
+
+$siufRulesPath = "HKCU:\Software\Microsoft\Siuf\Rules"
+
+if (-not (Test-Path $siufRulesPath)) {
+    try {
+        New-Item -Path $siufRulesPath -Force -ErrorAction Stop | Out-Null
+    } catch {
+        Write-Host "Error creating registry path: $($_.Exception.Message)"
+        exit 1
+    }
+}
+
+try {
+    Set-ItemProperty -Path $siufRulesPath -Name "NumberOfSIUFInPeriod" -Type DWord -Value 0 -ErrorAction Stop
+    Write-Host "Feedback disabled successfully."
+} catch {
+    Write-Host "Error setting registry property: $($_.Exception.Message)"
+    exit 1
+}
 
 # Disable Advertising ID
 Write-Host "Disabling Advertising ID..."
-If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo")) {
-New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" | Out-Null
+
+$advertisingInfoPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo"
+
+if (-not (Test-Path $advertisingInfoPath)) {
+    try {
+        New-Item -Path $advertisingInfoPath -ErrorAction Stop | Out-Null
+    } catch {
+        Write-Host "Error creating registry path: $($_.Exception.Message)"
+        exit 1
+    }
 }
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" -Name "Enabled" -Type DWord -Value 0
+try {
+    Set-ItemProperty -Path $advertisingInfoPath -Name "Enabled" -Type DWord -Value 0 -ErrorAction Stop
+    Write-Host "Advertising ID disabled successfully."
+} catch {
+    Write-Host "Error setting registry property: $($_.Exception.Message)"
+    exit 1
+}
 
 # Disable Cortana
 Write-Host "Disabling Cortana..."
-If (!(Test-Path "HKCU:\Software\Microsoft\Personalization\Settings")) {
-New-Item -Path "HKCU:\Software\Microsoft\Personalization\Settings" -Force | Out-Null
+
+$personalizationPath = "HKCU:\Software\Microsoft\Personalization\Settings"
+$inputPersonalizationPath = "HKCU:\Software\Microsoft\InputPersonalization"
+$trainedDataStorePath = "HKCU:\Software\Microsoft\InputPersonalization\TrainedDataStore"
+
+try {
+    # Disable Cortana in Personalization Settings
+    if (-not (Test-Path $personalizationPath)) {
+        New-Item -Path $personalizationPath -Force -ErrorAction Stop | Out-Null
+    }
+    Set-ItemProperty -Path $personalizationPath -Name "AcceptedPrivacyPolicy" -Type DWord -Value 0 -ErrorAction Stop
+
+    # Disable Cortana in Input Personalization
+    if (-not (Test-Path $inputPersonalizationPath)) {
+        New-Item -Path $inputPersonalizationPath -Force -ErrorAction Stop | Out-Null
+    }
+    Set-ItemProperty -Path $inputPersonalizationPath -Name "RestrictImplicitTextCollection" -Type DWord -Value 1 -ErrorAction Stop
+    Set-ItemProperty -Path $inputPersonalizationPath -Name "RestrictImplicitInkCollection" -Type DWord -Value 1 -ErrorAction Stop
+
+    # Disable Cortana in Trained Data Store
+    if (-not (Test-Path $trainedDataStorePath)) {
+        New-Item -Path $trainedDataStorePath -Force -ErrorAction Stop | Out-Null
+    }
+    Set-ItemProperty -Path $trainedDataStorePath -Name "HarvestContacts" -Type DWord -Value 0 -ErrorAction Stop
+
+    Write-Host "Cortana disabled successfully."
+} catch {
+    Write-Host "Error setting registry properties: $($_.Exception.Message)"
+    exit 1
 }
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Personalization\Settings" -Name "AcceptedPrivacyPolicy" -Type DWord -Value 0
-If (!(Test-Path "HKCU:\Software\Microsoft\InputPersonalization")) {
-New-Item -Path "HKCU:\Software\Microsoft\InputPersonalization" -Force | Out-Null
-}
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\InputPersonalization" -Name "RestrictImplicitTextCollection" -Type DWord -Value 1
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\InputPersonalization" -Name "RestrictImplicitInkCollection" -Type DWord -Value 1
-If (!(Test-Path "HKCU:\Software\Microsoft\InputPersonalization\TrainedDataStore")) {
-New-Item -Path "HKCU:\Software\Microsoft\InputPersonalization\TrainedDataStore" -Force | Out-Null
-}
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\InputPersonalization\TrainedDataStore" -Name "HarvestContacts" -Type DWord -Value 0
+
+
+
+
 
 # Remove AutoLogger file and restrict directory
 Write-Host "Removing AutoLogger file and restricting directory..."
@@ -395,6 +558,9 @@ icacls $autoLoggerDir /deny SYSTEM:`(OI`)`(CI`)F | Out-Null
 # Stop and disable Diagnostics Tracking Service
 Get-Service -Name DiagTrack | Set-Service -StartupType Disabled | Stop-Service
 Get-Service -Name dmwappushservice | Set-Service -StartupType Disabled | Stop-Service
+
+
+
 
 ##########
 # Service Tweaks
