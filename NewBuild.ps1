@@ -88,8 +88,17 @@ If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 $USBDrive = (Get-WmiObject win32_diskdrive | Where-Object{$_.interfacetype -eq "USB"} | ForEach-Object{Get-WmiObject -Query "ASSOCIATORS OF {Win32_DiskDrive.DeviceID=`"$($_.DeviceID.replace('\','\\'))`"} WHERE AssocClass = Win32_DiskDriveToDiskPartition"} |  ForEach-Object{Get-WmiObject -Query "ASSOCIATORS OF {Win32_DiskPartition.DeviceID=`"$($_.DeviceID)`"} WHERE AssocClass = Win32_LogicalDiskToPartition"} | ForEach-Object{$_.deviceid})
 
 # Copy the Tech files and Help to the PC
-robocopy $USBDrive'\\Build\\Tech\\'  'C:\\Tech\\' /R:2 /W:1
-robocopy 'C:\\Tech\\' 'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\StartUp\\' 'Help.lnk' /R:2 /W:1
+# Old Code: robocopy $USBDrive'\\Build\\Tech\\'  'C:\\Tech\\' /R:2 /W:1
+$sourcePath = Join-Path -Path $USBDrive -ChildPath 'Build\Tech'
+$destinationPath = 'C:\Tech'
+Copy-Item -Path $sourcePath -Destination $destinationPath -Recurse -Force
+
+# Old Code: robocopy 'C:\\Tech\\' 'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\StartUp\\' 'Help.lnk' /R:2 /W:1
+$sourcePath = 'C:\Tech'
+$destinationPath = 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup'
+$fileToCopy = 'Help.lnk'
+Copy-Item -Path (Join-Path -Path $sourcePath -ChildPath $fileToCopy) -Destination $destinationPath -Force
+
 
 # Insrtall Russian Language
 $LanguageList = Get-WinUserLanguageList
@@ -115,11 +124,24 @@ vssadmin resize shadowstorage /On=%SystemDrive% /For=%SystemDrive% /Maxsize=30GB
 # Schedule the Restore Point to run every 63 days
 schtasks /create /tn RestorePoint /tr "powershell.exe Checkpoint-Computer -Description RestorePoint" /sc daily /mo 63 /sd 11/09/2022 /st 22:00
 
-# Schedule a job to do a simple cleanup the third Sunday of the month at 3:00 AM
-SCHTASKS /CREATE /SC MONTHLY /M * /MO THIRD /D SUN /ST 03:00 /TN "Monthly Clean" /TR "C:\Tech\ScheduledSpeedUp.bat" /RL HIGHEST
+<# This is desinged to be run every Sunday, it does the following.
+    #Future function: Check for and apply updates to the script from GitHub
+    Clears the print queue.
+    Synchronizes the computer time with an internet time server.
+    Resets the network connection.
+    Installs the PSWindowsUpdate module (if not already installed).
+    If it is the 3rd Sunday of the month:  Installs Windows updates accordingly.
+    Clears the browser cache.
+    Runs Disk Cleanup.
+    Deletes temporary files and folders.
+    Optimizes the C drive (and additional drives if added).
+    If it is the 3rd Sunday of the month: 
+        Checks for disk errors if any are found it will have a full check disk run on the next reboot.
+        Restarts the computer.
 
-# Schedule a reboot the third Sunday of the month at 6 AM
-SCHTASKS /CREATE /SC MONTHLY /M * /MO THIRD /D SUN /ST 06:00 /TN "Monthly Reboot" /TR "C:\Windows\System32\shutdown.exe /r /f /c" /RL HIGHEST
+The log file is located at C:\Tech\SundayCleaningLog.txt
+#>
+schtasks /Create /TN "Sunday Cleaning" /SC WEEKLY /D SUN /ST 00:01 /TR "powershell.exe -ExecutionPolicy Bypass -File C:\Tech\SundayCleaning.ps1" /RU SYSTEM /RL HIGHEST /F
 
 # Enable Windows Sandbox
 Enable-WindowsOptionalFeature -FeatureName "Containers-DisposableClientVM" -All -Online -NoRestart
