@@ -125,7 +125,18 @@ try {
 
 
 # Launch the install of the Simple Help client
-& 'C:\Tech\Remote Access-windows64-online.exe'
+$installerPath = 'C:\Tech\Remote Access-windows64-online.exe'
+if (Test-Path -Path $installerPath) {
+    try {
+        Start-Process -FilePath $installerPath -Wait
+        Write-Host "SimpleHelp client installation completed successfully."
+    } catch {
+        Write-Host "An error occurred while installing SimpleHelp client: $_"
+    }
+} else {
+    Write-Host "SimpleHelp client installer not found at $installerPath. Please check the file path."
+}
+
 
 # Enable system restore on the PC
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" -Name "DisableSR" -Type Dword -Value 1 
