@@ -138,17 +138,38 @@ if (Test-Path -Path $installerPath) {
 }
 
 
-# Enable system restore on the PC
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" -Name "DisableSR" -Type Dword -Value 1 
+# Enable System Restore on the PC
+try {
+    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" -Name "DisableSR" -Type Dword -Value 0
+    Write-Host "System Restore has been enabled on the PC."
+} catch {
+    Write-Host "An error occurred while enabling System Restore: $_"
+}
 
 # Enable System Restore for C:
-Enable-ComputerRestore -Drive "C:\"
+try {
+    Enable-ComputerRestore -Drive "C:\"
+    Write-Host "System Restore has been enabled for drive C:."
+} catch {
+    Write-Host "An error occurred while enabling System Restore for drive C:: $_"
+}
 
 # Set the Restore Storage Size
-vssadmin resize shadowstorage /On=%SystemDrive% /For=%SystemDrive% /Maxsize=30GB
+try {
+    vssadmin resize shadowstorage /On=%SystemDrive% /For=%SystemDrive% /Maxsize=30GB
+    Write-Host "Restore Storage Size has been set to 30GB."
+} catch {
+    Write-Host "An error occurred while setting Restore Storage Size: $_"
+}
 
 # Schedule the Restore Point to run every 63 days
-schtasks /create /tn RestorePoint /tr "powershell.exe Checkpoint-Computer -Description RestorePoint" /sc daily /mo 63 /sd 11/09/2022 /st 22:00
+try {
+    schtasks /create /tn RestorePoint /tr "powershell.exe Checkpoint-Computer -Description RestorePoint" /sc daily /mo 63 /sd 11/09/2022 /st 22:00
+    Write-Host "Scheduled Restore Point creation every 63 days."
+} catch {
+    Write-Host "An error occurred while scheduling the Restore Point task: $_"
+}
+
 
 <# This is desinged to be run every Sunday, it does the following.
     #Future function: Check for and apply updates to the script from GitHub
