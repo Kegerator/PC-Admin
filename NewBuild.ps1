@@ -105,9 +105,24 @@ $LanguageList = Get-WinUserLanguageList
 $LanguageList.Add("ru")
 Set-WinUserLanguageList $LanguageList -Confirm:$False
 
-# Rename this PC
-$name = Read-Host 'What is the Name of this Computer?'
-Rename-Computer -NewName "$name"
+# Prompt the user for the new computer name and perform validation
+do {
+    $name = Read-Host 'Enter the new computer name'
+    if ($name -match "^[a-zA-Z0-9-]+$") {
+        $isValid = $true
+    } else {
+        Write-Host "Invalid computer name. The name can only contain letters, numbers, and hyphens."
+        $isValid = $false
+    }
+} while (-not $isValid)
+
+# Rename the computer
+try {
+    Rename-Computer -NewName $name 
+} catch {
+    Write-Host "An error occurred: $_"
+}
+
 
 # Launch the install of the Simple Help client
 & 'C:\Tech\Remote Access-windows64-online.exe'
