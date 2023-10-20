@@ -101,6 +101,58 @@ Grace Digital
     For UPnP UDP 5000 (but since he can play UpnP files that port seems to be open already)
     For Chromecast to work as well as our smartphone remote app to work: mDNS discovery needs to be turned on.  This is typically on by default on most routers.
 
+Axcient
+  AxCent requires access to these ports:Direct-to-Cloud (D2C) agent requirements
+    The x360Recover Direct-to-Cloud (D2C) agent requires the following firewall ports to be open for outbound communications on the internet:
+    TCP 80 (http)
+    TCP 443 (https)
+    TCP 9079 (Endpoint Manager)
+    TCP 9082 (Cloudserver)
+    TCP 9083 (Disaster Recovery Access Layer - DRAL )
+    TCP 9090 (Backup Manager)
+    TCP/UDP 10000 - 11024 (FTPS PASV - for FTP recovery from vault)
+  Recovery Center requirements
+    x360Recover Recovery Center requires the following ports to be open:
+    TCP/443 (https) to the vault (or appliance) holding the data to be recovered
+    TCP/443 (https) to api.axcient.net
+    TCP/9083 (Disaster Recovery Access Layer [DRAL]) to the Axcient Scale-Out Cloud storage node 
+  Common requirements for appliances and vaults 
+    All x360Recover devices must be able to communicate with the following destinations and ports: 
+	  Distributed Tunnel Service
+      TCP/2222 - rb-prd-slcflow.slc.efscloud.net 
+    x360Recover License Portal
+      TCP/443 (https) - Used to access API endpoints
+      URL: licensing.replibit.com
+      IP: 198.73.17.63
+    Cloud Key Management Services
+      TCP/443 (https) – Used to access API endpoints 
+      URL: appliances.efscloud.net
+      IP(s): 143.204.29.2/143.204.29.74/143.204.29.16/143.204.29.87
+      Note: IP addresses subject to change
+    Telemetry Services
+      The  x360Recover telemetry service utilizes a highly-dispersed cloud data provider with a large list of volatile IP addresses.  A list of the current IP addresses in use can be found here
+    Update Manager
+      TCP/80 (http) - Used for package downloads and version updates
+      URL(s): pkgmgrrepo.replibit.net
+      IP(s): highly volatile (Amazon AWS S3 service)
+    Update Repository
+      TCP/443 (https) – Used for software updates and custom package distribution
+      URL: download.slc.efscloud.net
+      IP: 198.73.17.62
+    Ubuntu Package Mirror
+      URL: rb-mirror.slc.efscloud.net
+      IP: 198.73.17.51
+  Outboud Traffic
+    Management Portal
+      TCP/22 (ssh) – Used to establish secure tunnel for remote management and Remote Assist
+      TCP/443 (https) – Used for accessing API endpoints
+    Vault
+      TCP/443(https)
+      TCP/9080(vt1)
+      TCP/9081(vt2)
+    Scale-Out Cloud
+      TCP/9081(vt2)
+          
 #>
 
 
