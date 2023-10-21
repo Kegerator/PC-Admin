@@ -42,6 +42,7 @@ Echo ***** Start System Maintenance                     *****
 Echo ***** Clear any print jobs and restart the spooler *****
 Echo ***** Disable Multicasting                         *****
 Echo ***** Flush DNS and reset IP Stack                 *****
+Echo ***** Check the Gateway and DNS Servers            *****
 Echo ***** Sync time to the Internet                    *****
 Echo ***** Enable and Create Restore Point              *****
 Echo ***** Schedule the Restore Point every 63 days     *****
@@ -188,6 +189,72 @@ ping -n 4 127.0.0.1 >nul: 2>nul:
 :: ping -n 4 127.0.0.1 >nul: 2>nul:
 :: ipconfig /renew >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 2>>%temp%\SpeedUpAutoErrors%SDay%-%SMonth%-%SYear%.txt
 ping -n 3 127.0.0.1 >nul: 2>nul:
+
+
+
+:: Check the Gateway and DNS Servers
+Set TTime=%Time:~0,5%
+Echo ***** Check the Gateway and DNS Servers            *****
+Echo ***** Check the Gateway and DNS Servers            ***** >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
+Echo ***** 1 Minute                                     *****
+Echo *****
+setlocal enabledelayedexpansion
+:: Find the gateway's IP address
+for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr "Default"') do set gateway=%%a
+:: Remove any spaces from the gateway IP address
+set gateway=!gateway: =!
+:: Ping the gateway
+IPconfig /all >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
+Echo ***** Pinging the Gateway                          *****
+ping %gateway%
+ping %gateway% >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
+:: Getting DNS Server address
+for /f "tokens=2 delims=:" %%a in ('ipconfig /all ^| findstr /c:"DNS Servers"') do (
+    set dnsServer=%%a
+    Echo ***** DNS Server: !dnsServer!
+    set isIP=false
+    rem Check if it's an IPv4 address
+    for /f "tokens=1-4 delims=." %%b in ("!dnsServer!") do (
+        if "%%d" neq "" (
+            set isIP=true
+        )
+    )
+    rem Check if it's an IPv6 address
+    echo ***** !dnsServer! | findstr /c:"[::]" >nul
+    if !errorlevel!==0 (
+        set isIP=true
+    )
+    if !isIP!==true (
+        powershell -Command "& {(New-Object Net.Sockets.TcpClient).Connect('!dnsServer!', 53)}" >nul 2>&1
+        if !errorlevel!==0 (
+            Echo ***** Port 53 is open on !dnsServer!
+            Echo ***** Port 53 is open on !dnsServer! >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
+        ) else (
+            Echo ***** Port 53 is closed on !dnsServer!
+            Echo ***** Port 53 is closed on !dnsServer! >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
+        )
+    ) else (
+        Echo ***** DNS Server hostname, resolving to IP address... *****
+        Echo ***** DNS Server hostname, resolving to IP address... >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt 
+        for /f "tokens=2 delims=[]" %%c in ('ping -n 1 !dnsServer! ^| findstr /c:"["') do (
+            set IPAddress=%%c
+            Echo ***** IP Address: !IPAddress! 
+            powershell -Command "& {(New-Object Net.Sockets.TcpClient).Connect('!IPAddress!', 53)}" >nul 2>&1
+            if !errorlevel!==0 (
+                Echo ***** Port 53 is open on !IPAddress!  
+                Echo ***** Port 53 is open on !IPAddress! >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt
+            ) else (
+                Echo ***** Port 53 is closed on !IPAddress!
+                Echo ***** Port 53 is closed on !IPAddress! >>%temp%\SpeedUpAuto%SDay%-%SMonth%-%SYear%.txt
+            )
+        )
+    )
+)
+endlocal
+Echo ***** Time %TTime%
+Echo ********************************************************
+
+
 
 
 :: Sync time to the Internet
